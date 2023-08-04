@@ -23,14 +23,14 @@ architecture rtl of uart_clock is
 begin
     O_clk_process : process (I_clk, I_reset)
     begin
-        if I_reset = '1' then
+        if (I_reset = '1') then
             s_clk <= '0';
-            elsif falling_edge(I_clk) then
+        elsif (falling_edge(I_clk)) then
             -- if s_counter = g_clk_freq / g_baud_rate / 2 - 1 then
-            if to_integer(s_counter) = to_integer(unsigned(I_sampling_delay)) / 2 - 1 then
+            if ((to_integer(s_counter)) = (to_integer(unsigned(I_sampling_delay)) / 2 - 1)) then
                 s_clk     <= not s_clk;
                 s_counter <= to_unsigned(0, 32);
-                else
+            else
                 s_counter <= to_unsigned(to_integer(s_counter) + 1, 32);
             end if;
         end if;

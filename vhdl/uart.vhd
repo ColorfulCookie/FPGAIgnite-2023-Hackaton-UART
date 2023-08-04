@@ -13,7 +13,7 @@ entity uart is
         rst                      : in std_logic                     := '0';             --reset is high active
         tx_data_out              : out std_logic                    := '1';             --transmission bit output (Tx) (continuous 1 for 'off')
         tx_ready                 : out std_logic                    := '0';             -- port for signaling begin ready to transmit a new data word
-        tx_data_word             : out std_logic_vector(7 downto 0) := (others => '1'); --transmission word (Tx) (continuous 1 for 'off')
+        tx_data_word             : in std_logic_vector(7 downto 0)  := (others => '1'); --transmission word (Tx) (continuous 1 for 'off')
         tx_start                 : in std_logic                     := '0';
         rx_data                  : in std_logic                     := '1';                                  --receiving bit (Rx) (continuous 1 for 'off')
         rx_finished_out          : out std_logic                    := '0';                                  -- port for signaling having finished receiving a data word
@@ -82,63 +82,79 @@ begin
     ------------------------------------------------------------------------------
     --RX
     ------------------------------------------------------------------------------
+    --DONE
     -- FSM for the RX  flow contro
     fsm_rx_process : process (clk) begin
         if (rising_edge(clk)) then
-            case rx_state is
-                when rx_idle => --idle until a starting bit (0) arrives
-                    rx_counter_rst <= '0';
-                    if (rx_data = '0') then
-                        rx_state <= rx_starting;
-                    else
-                        rx_state <= rx_idle;
-                    end if;
-                when rx_starting =>    -- start receiving
-                    rx_counter_rst <= '1'; --reset counter
-                    rx_state       <= rx_receiving;
-                when rx_receiving =>   --during receving: if receiving is finished, go to finished state and reset counter, else keep on receiving
-                    rx_counter_rst <= '0'; --release counter reset
-                    if (rx_bit_counter >= bits_per_package) then
-                        rx_state <= rx_finished;
-                    else
-                        null;
-                    end if;
-                when rx_finished =>
-                    rx_counter_rst <= '0';
-                when others => null;
-            end case;
+            if (rst = '1') then
+                rx_state <= rx_idle;
+            else
+                case rx_state is
+                    when rx_idle => --idle until a starting bit (0) arrives
+                        rx_counter_rst <= '0';
+                        if (rx_data = '0') then
+                            rx_state <= rx_starting;
+                        else
+                            rx_state <= rx_idle;
+                        end if;
+                    when rx_starting =>    -- start receiving
+                        rx_counter_rst <= '1'; --reset counter
+                        rx_state       <= rx_receiving;
+                    when rx_receiving =>   --during receving: if receiving is finished, go to finished state and reset counter, else keep on receiving
+                        rx_counter_rst <= '0'; --release counter reset
+                        if (rx_bit_counter >= bits_per_package) then
+                            rx_state <= rx_finished;
+                        else
+                            null;
+                        end if;
+                    when rx_finished =>
+                        rx_counter_rst <= '0';
+                    when others => null;
+                end case;
+            end if;
         end if;
     end process;
 
+    --DONE
     --set and release the RX finished signal
-    rx_finished_process : process (all) begin
-        case rx_state is
-            when rx_idle =>
-                rx_finished_out <= rx_finished_out;
-            when rx_starting =>
+    rx_finished_process : process (clk) begin
+        if (rising_edge(clk)) then
+            if (rst = '1') then
                 rx_finished_out <= '0';
-            when rx_receiving =>
-                rx_finished_out <= '0';
-            when rx_finished =>
-                rx_finished_out <= '1';
-            when others =>
-                rx_finished_out <= '0';
-        end case;
+            else
+                case rx_state is
+                    when rx_idle =>
+                        rx_finished_out <= rx_finished_out;
+                    when rx_starting =>
+                        rx_finished_out <= '0';
+                    when rx_receiving =>
+                        rx_finished_out <= '0';
+                    when rx_finished =>
+                        rx_finished_out <= '1';
+                    when others =>
+                        rx_finished_out <= '0';
+                end case;
+            end if;
+        end if;
     end process;
 
+    --DONE
     -- Counter for the RX FSM  
     rx_counter_process : process (rx_uart_clk, rx_counter_rst) begin
-        if rx_counter_rst = '1' then
+        if (rx_counter_rst = '1') then
             rx_bit_counter <= 0;
-            elsif rising_edge(rx_uart_clk) then
+        elsif (rising_edge(rx_uart_clk)) then
             rx_bit_counter <= rx_bit_counter + 1;
         end if;
     end process;
 
+    --DONE
     -- RX data flow
     rx_data_process : process (rx_uart_clk) begin
         if (rising_edge(rx_uart_clk)) then
-            if (rx_bit_counter > 0) then
+            if (rst = '1') then
+                rx_reg <= (others => '1');
+            elsif (rx_bit_counter > 0) then
                 rx_reg(rx_bit_counter - 1) <= rx_data;
             end if;
         end if;
@@ -150,44 +166,52 @@ begin
     -- FSM for the TX  flow control
     fsm_tx_process : process (clk) begin
         if (rising_edge(clk)) then
-            case tx_state is
-                when tx_idle => --idle until a starting bit (0) arrives
-                    tx_counter_rst <= '0';
-                    if (tx_start_internal = '1') then
-                        tx_state <= tx_starting;
-                    else
-                        tx_state <= tx_idle;
-                    end if;
-                when tx_starting =>    --start receiving
-                    tx_counter_rst <= '1'; --reset counter
-                    tx_state       <= tx_sending;
-                when tx_sending =>                           --during receving: if transmitting is finished, go to finished state and reset counter, else keep on transmitting
-                    tx_counter_rst <= '0';                       --release counter reset
-                    if (tx_bit_counter >= bits_per_package) then --bits per message + starting bit + ending bit + parity bit - starting at 0
-                        tx_state <= tx_finished;
-                    else
-                        null;
-                    end if;
-                when tx_finished =>
-                    tx_counter_rst <= '0';
-                when others => null;
-            end case;
+            if (rst = '1') then
+                tx_state <= tx_idle;
+            else
+                case tx_state is
+                    when tx_idle => --idle until a starting bit (0) arrives
+                        tx_counter_rst <= '0';
+                        if (tx_start_internal = '1') then
+                            tx_state <= tx_starting;
+                        else
+                            tx_state <= tx_idle;
+                        end if;
+                    when tx_starting =>    --start receiving
+                        tx_counter_rst <= '1'; --reset counter
+                        tx_state       <= tx_sending;
+                    when tx_sending =>                           --during receving: if transmitting is finished, go to finished state and reset counter, else keep on transmitting
+                        tx_counter_rst <= '0';                       --release counter reset
+                        if (tx_bit_counter >= bits_per_package) then --bits per message + starting bit + ending bit + parity bit - starting at 0
+                            tx_state <= tx_finished;
+                        else
+                            null;
+                        end if;
+                    when tx_finished =>
+                        tx_counter_rst <= '0';
+                    when others => null;
+                end case;
+            end if;
         end if;
     end process;
 
+    --DONE
     --set and release in internal TX starting signal
     tx_start_internal_process : process (clk) begin
         if (rising_edge(clk)) then
-            if (tx_start = '1') and tx_state = tx_idle then
+            if (rst = '1') then
+                tx_start_internal <= '0';
+            elsif ((tx_start = '1') and (tx_state = tx_idle)) then
                 tx_start_internal <= '1';
-                else
+            else
                 tx_start_internal <= '0';
             end if;
         end if;
     end process;
 
+    --DONE
     --set and release the TX ready signal
-    tx_ready_process : process (all) begin
+    tx_ready_process : process (clk) begin
         case tx_state is
             when tx_starting =>
                 tx_ready <= '0';
@@ -198,22 +222,23 @@ begin
         end case;
     end process;
 
+    --DONE
     -- Counter for the TX FSM
     tx_counter_process : process (tx_uart_clk, tx_counter_rst) begin
         if tx_counter_rst = '1' then
             tx_bit_counter <= 0;
-            elsif rising_edge(tx_uart_clk) then
+        elsif rising_edge(tx_uart_clk) then
             tx_bit_counter <= tx_bit_counter + 1;
         end if;
     end process;
 
+    --DONE
     -- TX data flow
     tx_data_process : process (tx_uart_clk, rst) begin
         if (rising_edge(tx_uart_clk)) then
-            if (rst = '1') then          --synchronous reset (HIGH ACTIVE)
-                tx_reg   <= (others => '1'); --register all 1s (therefore no message)
-                tx_ready <= '1';             --ready to receive
-                else
+            if (rst = '1') then
+                tx_data_out <= '1';
+            else
                 tx_data_out <= tx_reg(bits_per_package - tx_bit_counter);
             end if;
         end if;
@@ -224,17 +249,20 @@ begin
         tx_reg <= '1' & tx_parity_bit & tx_data_word & '0'; --start bit, parity bit, data bits, stop bit
     end process;
 
+    --DONE
     --handle the parity bit in the TX 
     tx_parity_bit_process : process (clk) begin
         if rising_edge(clk) then
-            if (tx_state = tx_starting) then
+            if (rst = '1') then
+                tx_parity_bit <= '1';
+            elsif (tx_state = tx_starting) then
                 if (cfg_parity_setting = "00") then
                     tx_parity_bit <= '1'; -- no parity
-                    elsif (cfg_parity_setting = "01") then
+                elsif (cfg_parity_setting = "01") then
                     tx_parity_bit <= xnor_reduce(tx_data_word); -- even parity
-                    elsif (cfg_parity_setting = "10") then
+                elsif (cfg_parity_setting = "10") then
                     tx_parity_bit <= xor_reduce(tx_data_word); -- odd parity
-                    else
+                else
                     tx_parity_bit <= '1'; -- no parity
                 end if;
             end if;
