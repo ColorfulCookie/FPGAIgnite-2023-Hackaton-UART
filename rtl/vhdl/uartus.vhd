@@ -2,28 +2,24 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_misc.all;
-
---TODO:
--- - resets everywhere
--- - parity bit in rx => what to dowith it?
--- - rx finished signal
-entity uart is
+entity uartus is
     port (
-        clk                      : in std_logic                     := '1';             --clock
-        rst                      : in std_logic                     := '0';             --reset is high active
-        tx_data_out              : out std_logic                    := '1';             --transmission bit output (Tx) (continuous 1 for 'off')
-        tx_ready                 : out std_logic                    := '0';             -- port for signaling begin ready to transmit a new data word
-        tx_data_word             : in std_logic_vector(7 downto 0)  := (others => '1'); --transmission word (Tx) (continuous 1 for 'off')
-        tx_start                 : in std_logic                     := '0';
-        rx_data                  : in std_logic                     := '1';                                  --receiving bit (Rx) (continuous 1 for 'off')
-        rx_finished_out          : out std_logic                    := '0';                                  -- port for signaling having finished receiving a data word
+        clk                      : in std_logic                     := '1';                                  --clock
+        rst                      : in std_logic                     := '0';                                  --reset is high active
+        tx_data_out              : out std_logic                    := '1';                                  --transmission bit output (Tx) (continuous 1 for 'off')
+        tx_ready                 : out std_logic                    := '0';                                  -- port for signaling begin ready to transmit a new data word
+        tx_data_word             : in std_logic_vector(7 downto 0)  := (others => '1');                      --transmission word (Tx) (continuous 1 for 'off')
+        tx_start                 : in std_logic                     := '0';                                  -- signal to start transmittion
+        rx_data_in               : in std_logic                     := '1';                                  --receiving bit (Rx) (continuous 1 for 'off')
+        rx_finished_out          : out std_logic                    := '0';                                  --port for signaling having finished receiving a data word
+        rx_data_word_out         : out std_logic_vector(7 downto 0) := (others => '1');                      --tx data word output
         cfg_parity_setting       : in std_logic_vector(1 downto 0)  := "00";                                 -- 00 -> parity off, 01-> parity even, 10-> parity odd
         cfg_clkSpeed_over_bdRate : in std_logic_vector(31 downto 0) := std_logic_vector(to_unsigned(87, 32)) -- sets the effective baudrate; clk/bd, e.g. for a 10MHz clk and with 115.2k Bd: 10 000 000 / 115 200 = 86.8
         -- bits_per_word: integer := 8;--nr of data bits in each transmission; hardcoded to 8 
     );
-end entity uart;
+end entity uartus;
 
-architecture behav of uart is
+architecture behav of uartus is
     component uart_clock is
         port (
             I_clk            : in std_logic;
@@ -41,7 +37,7 @@ architecture behav of uart is
     type state_type_rx is (rx_idle, rx_starting, rx_receiving, rx_finished);
     signal rx_state       : state_type_rx                                  := rx_idle;         --FSM state for the rx
     signal rx_reg         : std_logic_vector((bits_per_word - 1) downto 0) := (others => '1'); --RX register
-    signal rx_bit_counter : integer range 0 to 15                          := 0;               --bit counter
+    signal rx_bit_counter : integer range 0 to 63                          := 0;               --bit counter
     signal rx_counter_rst : std_logic                                      := '0';             --reset signal for the bit counter
     signal rx_uart_clk    : std_logic                                      := '0';             --clock for correct transmittion delay
     --tx signals
@@ -92,7 +88,7 @@ begin
                 case rx_state is
                     when rx_idle => --idle until a starting bit (0) arrives
                         rx_counter_rst <= '0';
-                        if (rx_data = '0') then
+                        if (rx_data_in = '0') then
                             rx_state <= rx_starting;
                         else
                             rx_state <= rx_idle;
@@ -124,15 +120,20 @@ begin
             else
                 case rx_state is
                     when rx_idle =>
-                        rx_finished_out <= rx_finished_out;
+                        rx_finished_out  <= rx_finished_out;
+                        rx_data_word_out <= rx_data_word_out;
                     when rx_starting =>
-                        rx_finished_out <= '0';
+                        rx_finished_out  <= '0';
+                        rx_data_word_out <= rx_data_word_out;
                     when rx_receiving =>
-                        rx_finished_out <= '0';
+                        rx_finished_out  <= '0';
+                        rx_data_word_out <= rx_data_word_out;
                     when rx_finished =>
-                        rx_finished_out <= '1';
+                        rx_finished_out  <= '1';
+                        rx_data_word_out <= rx_reg;
                     when others =>
-                        rx_finished_out <= '0';
+                        rx_finished_out  <= '0';
+                        rx_data_word_out <= rx_data_word_out;
                 end case;
             end if;
         end if;
@@ -144,18 +145,24 @@ begin
         if (rx_counter_rst = '1') then
             rx_bit_counter <= 0;
         elsif (rising_edge(rx_uart_clk)) then
-            rx_bit_counter <= rx_bit_counter + 1;
+            if (rx_state = rx_receiving) then
+                rx_bit_counter <= rx_bit_counter + 1;
+            end if;
         end if;
     end process;
 
     --DONE
     -- RX data flow
-    rx_data_process : process (rx_uart_clk) begin
+    rx_data_in_process : process (rx_uart_clk) begin
         if (rising_edge(rx_uart_clk)) then
             if (rst = '1') then
                 rx_reg <= (others => '1');
+            elsif (rx_bit_counter > 8 or rx_bit_counter < 1) then
+                null;
             elsif (rx_bit_counter > 0) then
-                rx_reg(rx_bit_counter - 1) <= rx_data;
+                rx_reg(rx_bit_counter - 1) <= rx_data_in;
+            else
+                null;
             end if;
         end if;
     end process;
@@ -228,7 +235,9 @@ begin
         if tx_counter_rst = '1' then
             tx_bit_counter <= 0;
         elsif rising_edge(tx_uart_clk) then
-            tx_bit_counter <= tx_bit_counter + 1;
+            if (tx_state = tx_sending) then
+                tx_bit_counter <= tx_bit_counter + 1;
+            end if;
         end if;
     end process;
 
@@ -238,8 +247,10 @@ begin
         if (rising_edge(tx_uart_clk)) then
             if (rst = '1') then
                 tx_data_out <= '1';
-            else
+            elsif (tx_bit_counter < 11 and tx_bit_counter > 0) then
                 tx_data_out <= tx_reg(bits_per_package - tx_bit_counter);
+            else
+                null;
             end if;
         end if;
     end process;
