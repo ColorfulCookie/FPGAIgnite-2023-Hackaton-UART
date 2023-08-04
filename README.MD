@@ -2,12 +2,13 @@
 
 ## Todo
 
--   [x] Check RX functionality
--   [x] Check TX
--   [x] Check TX parity bits
--   [x] Check half duplex
--   [x] Check full duplex
--   [ ] Check theory of high baud-rates
+-   [x] Debug RX functionality
+-   [x] Debug TX
+-   [x] Debug TX parity bits
+-   [x] Debug half duplex
+-   [x] Debug full duplex
+-   [ ] Debug theory of high baud-rates
+-   [ ] Incorporate and debug parity bit calulation for the RX (make availible via a new output port)
 -   [ ] Why is the time to transmit 1 data package steadily decreasing?
 -   [ ] Finish documentation
 
