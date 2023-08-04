@@ -263,28 +263,40 @@ begin
         end if;
     end process;
 
-    --build the TX register from the input word
-    tx_reg_process : process (all) begin
-        tx_reg <= '1' & tx_parity_bit & tx_data_word & '0'; --start bit, parity bit, data bits, stop bit
+    --build the TX register from the input word and handle the parity bit 
+    tx_reg_process : process (tx_data_word_in) begin
+        if (cfg_parity_setting = "00") then                                   --no parity
+            tx_reg <= '1' & '1' & tx_data_word_in & '0';                          --stop bit, parity bit, data bits, start bit
+        elsif (cfg_parity_setting = "11") then                                --no parity
+            tx_reg <= '1' & '1' & tx_data_word_in & '0';                          --stop bit, parity bit, data bits, start bit
+        elsif (cfg_parity_setting = "01") then                                --even parity
+            tx_reg <= '1' & xnor_reduce(tx_data_word_in) & tx_data_word_in & '0'; --stop bit, parity bit, data bits, start bit
+        elsif (cfg_parity_setting = "10") then                                --odd parity
+            tx_reg <= '1' & xor_reduce(tx_data_word_in) & tx_data_word_in & '0';  --stop bit, parity bit, data bits, start bit
+        else                                                                  --no parity
+            tx_reg <= '1' & '1' & tx_data_word_in & '0';                          --stop bit, parity bit, data bits, start bit
+        end if;
     end process;
 
     --DONE
     --handle the parity bit in the TX 
-    tx_parity_bit_process : process (clk) begin
-        if rising_edge(clk) then
-            if (rst = '1') then
-                tx_parity_bit <= '1';
-            elsif (tx_state = tx_starting) then
-                if (cfg_parity_setting = "00") then
-                    tx_parity_bit <= '1'; -- no parity
-                elsif (cfg_parity_setting = "01") then
-                    tx_parity_bit <= xnor_reduce(tx_data_word); -- even parity
-                elsif (cfg_parity_setting = "10") then
-                    tx_parity_bit <= xor_reduce(tx_data_word); -- odd parity
-                else
-                    tx_parity_bit <= '1'; -- no parity
-                end if;
-            end if;
-        end if;
-    end process;
+    -- tx_parity_bit_process : process (clk) begin
+    --     if rising_edge(clk) then
+    --         if (rst = '1') then
+    --             tx_parity_bit <= '1';
+    --         elsif (tx_state = tx_starting) then
+    --             if (cfg_parity_setting = "00") then
+    --                 tx_parity_bit <= '1'; -- no parity
+    --             elsif (cfg_parity_setting = "11") then
+    --                 tx_parity_bit <= '1'; -- no parity
+    --             elsif (cfg_parity_setting = "01") then
+    --                 tx_parity_bit <= xnor_reduce(tx_data_word_in); -- even parity
+    --             elsif (cfg_parity_setting = "10") then
+    --                 tx_parity_bit <= xor_reduce(tx_data_word_in); -- odd parity
+    --             else
+    --                 tx_parity_bit <= '1'; -- no parity
+    --             end if;
+    --         end if;
+    --     end if;
+    -- end process;
 end architecture behav;
