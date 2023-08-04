@@ -16,9 +16,9 @@
 ### Setting the UART Baud-rate
 
 The Baud-rate is set via supplying the quotient of the frequency of `clk` and the Baud-rate in Bd.
-Example: for a 10MHz clock with 115200 Bd: `cfg_clkSpeed_over_bdRate`$=\frac{10000000}{115200}=86.80\overline{5}\approx 87$.
+Example: for a 10MHz clock with 115200 Bd: `cfg_clkSpeed_over_bdRate`$=\frac{10000000}{115200}=86.80\overline{5}\approx 87$.[^1]
 As should be obvious, there are limits on how far the speed of the UART interface can be pushed this way, but the user is assumed to be smart and therefore given all responsibility (we, after all, are not Quartus😉).
-
+[^1] If you incorporate this calculation into your VHDL code (like we did in the test-bench) you will actually receive 86 as the output.
 ### TX
 
 After settings `tx_start=1` time for each transmission varies a bit. This is not calculated, but was observed when using the test-bench with GHDL. Some transmissions only take about 960 clk cycles, but we only stop observing fails for sending multiple TX packages quickly after one another, when we wait 1135 clk cycles in total. This number is purely heuristic and was obtained after looking at the waveform of the following test-bench:
