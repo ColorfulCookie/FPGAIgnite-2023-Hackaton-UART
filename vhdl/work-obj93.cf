@@ -1,4 +1,0 @@
-v 4
-file . "uart_clock.vhd" "5f2efe696c1aa0c07b9e31e5afb943243b8afbe5" "20230804124126.789":
-  entity uart_clock at 5( 332) + 0 on 13;
-  architecture rtl of uart_clock at 18( 662) + 0 on 14;
