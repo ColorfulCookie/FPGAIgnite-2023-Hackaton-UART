@@ -8,7 +8,7 @@
 -   [x] Debug half duplex
 -   [x] Debug full duplex
 -   [ ] Debug theory of high baud-rates
--   [ ] Incorporate and debug parity bit calulation for the RX (make availible via a new output port)
+-   [ ] Incorporate and debug parity bit calculation for the RX (make available via a new output port)
 -   [ ] Why is the time to transmit 1 data package steadily decreasing?
 -   [ ] Finish documentation
 
