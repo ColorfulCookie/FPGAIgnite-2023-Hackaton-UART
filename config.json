@@ -1,7 +1,7 @@
 {
     "DESIGN_NAME": "uartus",
     "VERILOG_FILES": "dir::src/*.v",
-    "CLOCK_PORT": "clk",
+    "CLOCK_PORT": "I_clk",
     "CLOCK_PERIOD": 10.0,
     "DESIGN_IS_CORE": true
 }
