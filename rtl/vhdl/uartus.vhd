@@ -8,7 +8,7 @@ entity uartus is
         rst                      : in std_logic                     := '0';                                  --reset is high active
         tx_data_out              : out std_logic                    := '1';                                  --transmission bit output (Tx) (continuous 1 for 'off')
         tx_ready                 : out std_logic                    := '0';                                  -- port for signaling begin ready to transmit a new data word
-        tx_data_word             : in std_logic_vector(7 downto 0)  := (others => '1');                      --transmission word (Tx) (continuous 1 for 'off')
+        tx_data_word_in          : in std_logic_vector(7 downto 0)  := (others => '1');                      --transmission word (Tx) (continuous 1 for 'off')
         tx_start                 : in std_logic                     := '0';                                  -- signal to start transmittion
         rx_data_in               : in std_logic                     := '1';                                  --receiving bit (Rx) (continuous 1 for 'off')
         rx_finished_out          : out std_logic                    := '0';                                  --port for signaling having finished receiving a data word
@@ -36,7 +36,7 @@ architecture behav of uartus is
     ------------------------------------------------------------------------------
     --constant design variables
     constant bits_per_word    : integer range 0 to 8          := 8;
-    constant bits_per_package : integer range 0 to 15         := bits_per_word + 2; --number of bits in each package: bits per message + starting bit + ending bit + parity bit - starting to count at zero
+    constant bits_per_package : integer range 0 to 15         := bits_per_word + 3; --number of bits in each package: bits per message + starting bit + parity bit + ending bit
     --design variables
     signal sampling_delay     : std_logic_vector(31 downto 0) := (others => '0');
     --rx signals
@@ -48,13 +48,13 @@ architecture behav of uartus is
     signal rx_uart_clk    : std_logic                                      := '0';             --clock for correct transmittion delay
     --tx signals
     type state_type_tx is (tx_idle, tx_starting, tx_sending, tx_finished);
-    signal tx_state          : state_type_tx                                 := tx_idle;         --FSM state for the tx
-    signal tx_reg            : std_logic_vector((bits_per_package) downto 0) := (others => '1'); --register: bits/message + stop bit + parity bit
-    signal tx_bit_counter    : integer range 0 to 15                         := 0;               --bit counter
-    signal tx_counter_rst    : std_logic                                     := '0';             --reset signal for the bit counter
-    signal tx_start_internal : std_logic                                     := '0';             --internal starting signal for the tx
-    signal tx_parity_bit     : std_logic                                     := '0';             --parity bit   
-    signal tx_uart_clk       : std_logic                                     := '0';             --clock for correct sampling
+    signal tx_state          : state_type_tx                                     := tx_idle;         --FSM state for the tx
+    signal tx_reg            : std_logic_vector((bits_per_package - 1) downto 0) := (others => '1'); --register: bits/message + stop bit + parity bit
+    signal tx_bit_counter    : integer range 0 to 15                             := 0;               --bit counter
+    signal tx_counter_rst    : std_logic                                         := '0';             --reset signal for the bit counter
+    signal tx_start_internal : std_logic                                         := '0';             --internal starting signal for the tx
+    signal tx_parity_bit     : std_logic                                         := '0';             --parity bit   
+    signal tx_uart_clk       : std_logic                                         := '0';             --clock for correct sampling
 
     --components
 begin
@@ -104,7 +104,7 @@ begin
                         rx_state       <= rx_receiving;
                     when rx_receiving =>   --during receving: if receiving is finished, go to finished state and reset counter, else keep on receiving
                         rx_counter_rst <= '0'; --release counter reset
-                        if (rx_bit_counter >= bits_per_package) then
+                        if (rx_bit_counter >= (bits_per_package - 1)) then
                             rx_state <= rx_finished;
                         else
                             null;
@@ -194,9 +194,9 @@ begin
                     when tx_starting =>    --start receiving
                         tx_counter_rst <= '1'; --reset counter
                         tx_state       <= tx_sending;
-                    when tx_sending =>                           --during receving: if transmitting is finished, go to finished state and reset counter, else keep on transmitting
-                        tx_counter_rst <= '0';                       --release counter reset
-                        if (tx_bit_counter >= bits_per_package) then --bits per message + starting bit + ending bit + parity bit - starting at 0
+                    when tx_sending =>                                 --during receving: if transmitting is finished, go to finished state and reset counter, else keep on transmitting
+                        tx_counter_rst <= '0';                             --release counter reset
+                        if (tx_bit_counter >= (bits_per_package - 1)) then --bits per message + starting bit + ending bit + parity bit - starting at 0
                             tx_state <= tx_finished;
                         else
                             null;
@@ -256,7 +256,7 @@ begin
             if (rst = '1') then
                 tx_data_out <= '1';
             elsif (tx_bit_counter < 11 and tx_bit_counter > 0) then
-                tx_data_out <= tx_reg(bits_per_package - tx_bit_counter);
+                tx_data_out <= tx_reg((bits_per_package - 1) - tx_bit_counter);
             else
                 null;
             end if;
