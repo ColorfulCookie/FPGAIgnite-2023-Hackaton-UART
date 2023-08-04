@@ -1,5 +1,5 @@
-#Run the script using verilog_conversion <filename.vhdl filename.vhdl>
-ghdl -a $1
-ghdl synth --out=verilog $1 > $1.v
-ghdl -a $2
-ghdl synth --out=verilog $2 > $2.v
+
+ghdl -a --std=08 uart_clock.vhd
+ghdl -a --std=08 uart.vhd
+#ghdl synth --std=08 --out=verilog uart_clock > uart_clock.v
+ghdl synth --std=08 --out=verilog uart > uart.v

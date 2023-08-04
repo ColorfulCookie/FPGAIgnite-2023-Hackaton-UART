@@ -1,0 +1,7 @@
+v 4
+file . "uart_clock.vhd" "5f2efe696c1aa0c07b9e31e5afb943243b8afbe5" "20230804124810.015":
+  entity uart_clock at 5( 332) + 0 on 21;
+  architecture rtl of uart_clock at 18( 662) + 0 on 22;
+file . "uart.vhd" "25ae7a14601fca89b2c51f2ad080633fd67e8b4b" "20230804124810.123":
+  entity uart at 1( 0) + 0 on 23;
+  architecture behav of uart at 26( 1789) + 0 on 24;
