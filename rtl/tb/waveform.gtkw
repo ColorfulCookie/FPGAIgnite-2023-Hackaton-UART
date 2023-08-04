@@ -1,0 +1,57 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Fri Aug  4 19:08:55 2023
+[*]
+[dumpfile] "/mnt/e/OneDrive/UNI/23 SS/FPGAIgnite/Hackaton/rtl/tb/sim/uartus_tb.ghw"
+[dumpfile_mtime] "Fri Aug  4 19:08:51 2023"
+[dumpfile_size] 2918904
+[savefile] "/mnt/e/OneDrive/UNI/23 SS/FPGAIgnite/Hackaton/rtl/tb/waveform.gtkw"
+[timestart] 245100000000
+[size] 2548 1359
+[pos] -1 -1
+*-35.000000 348500000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.uartus_tb.
+[treeopen] top.uartus_tb.uut.
+[sst_width] 308
+[signals_width] 289
+[sst_expanded] 1
+[sst_vpaned_height] 419
+@28
+top.uartus_tb.uut.rst
+top.uartus_tb.uut.clk
+@200
+-TX
+@28
+top.uartus_tb.uut.tx_uart_clk
+top.uartus_tb.uut.tx_ready
+top.uartus_tb.uut.tx_start
+top.uartus_tb.uut.tx_start_internal
+top.uartus_tb.uut.tx_start_internal
+@420
+top.uartus_tb.uut.tx_bit_counter
+@28
+top.uartus_tb.uut.tx_counter_rst
+@420
+top.uartus_tb.uut.tx_state
+@28
+top.uartus_tb.uut.tx_parity_bit
+@22
++{tx to be sent} #{top.uartus_tb.uut.tx_data_word[7:0]} top.uartus_tb.uut.tx_data_word[7] top.uartus_tb.uut.tx_data_word[6] top.uartus_tb.uut.tx_data_word[5] top.uartus_tb.uut.tx_data_word[4] top.uartus_tb.uut.tx_data_word[3] top.uartus_tb.uut.tx_data_word[2] top.uartus_tb.uut.tx_data_word[1] top.uartus_tb.uut.tx_data_word[0]
+@28
+[color] 1
+top.uartus_tb.uut.tx_data_out
+@200
+-RX
+@28
+top.uartus_tb.uut.rx_uart_clk
+@420
+top.uartus_tb.uut.rx_bit_counter
+@28
+top.uartus_tb.uut.rx_counter_rst
+@420
+top.uartus_tb.uut.rx_state
+@22
+#{top.uartus_tb.uut.rx_data_word_out[7:0]} top.uartus_tb.uut.rx_data_word_out[7] top.uartus_tb.uut.rx_data_word_out[6] top.uartus_tb.uut.rx_data_word_out[5] top.uartus_tb.uut.rx_data_word_out[4] top.uartus_tb.uut.rx_data_word_out[3] top.uartus_tb.uut.rx_data_word_out[2] top.uartus_tb.uut.rx_data_word_out[1] top.uartus_tb.uut.rx_data_word_out[0]
+[pattern_trace] 1
+[pattern_trace] 0

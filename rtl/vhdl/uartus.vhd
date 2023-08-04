@@ -20,6 +20,9 @@ entity uartus is
 end entity uartus;
 
 architecture behav of uartus is
+    ------------------------------------------------------------------------------
+    --components
+    ------------------------------------------------------------------------------
     component uart_clock is
         port (
             I_clk            : in std_logic;
@@ -28,6 +31,9 @@ architecture behav of uartus is
             O_clk            : out std_logic
         );
     end component;
+    ------------------------------------------------------------------------------
+    --constants, variables, signals
+    ------------------------------------------------------------------------------
     --constant design variables
     constant bits_per_word    : integer range 0 to 8          := 8;
     constant bits_per_package : integer range 0 to 15         := bits_per_word + 2; --number of bits in each package: bits per message + starting bit + ending bit + parity bit - starting to count at zero
@@ -105,6 +111,7 @@ begin
                         end if;
                     when rx_finished =>
                         rx_counter_rst <= '0';
+                        rx_state       <= rx_idle;
                     when others => null;
                 end case;
             end if;
@@ -196,6 +203,7 @@ begin
                         end if;
                     when tx_finished =>
                         tx_counter_rst <= '0';
+                        tx_state       <= tx_idle;
                     when others => null;
                 end case;
             end if;

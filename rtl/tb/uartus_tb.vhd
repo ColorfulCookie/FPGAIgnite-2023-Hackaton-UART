@@ -8,21 +8,22 @@ end entity uartus_tb;
 architecture rtl of uartus_tb is
     component uartus is
         port (
-            clk                      : in std_logic                     := '1';             --clock
-            rst                      : in std_logic                     := '0';             --reset is high active
-            tx_data_out              : out std_logic                    := '1';             --transmission bit output (Tx) (continuous 1 for 'off')
-            tx_ready                 : out std_logic                    := '0';             -- port for signaling begin ready to transmit a new data word
-            tx_data_word             : out std_logic_vector(7 downto 0) := (others => '1'); --transmission word (Tx) (continuous 1 for 'off')
-            tx_start                 : in std_logic                     := '0';
-            rx_data_in               : in std_logic                     := '1'; --receiving bit (Rx) (continuous 1 for 'off')
-            rx_data_word_out         : out std_logic_vector(7 downto 0) := (others => '1');
-            rx_finished_out          : out std_logic                    := '0';                                  -- port for signaling having finished receiving a data word
+            clk                      : in std_logic                     := '1';                                  --clock
+            rst                      : in std_logic                     := '0';                                  --reset is high active
+            tx_data_out              : out std_logic                    := '1';                                  --transmission bit output (Tx) (continuous 1 for 'off')
+            tx_ready                 : out std_logic                    := '0';                                  -- port for signaling begin ready to transmit a new data word
+            tx_data_word             : in std_logic_vector(7 downto 0)  := (others => '1');                      --transmission word (Tx) (continuous 1 for 'off')
+            tx_start                 : in std_logic                     := '0';                                  -- signal to start transmittion
+            rx_data_in               : in std_logic                     := '1';                                  --receiving bit (Rx) (continuous 1 for 'off')
+            rx_finished_out          : out std_logic                    := '0';                                  --port for signaling having finished receiving a data word
+            rx_data_word_out         : out std_logic_vector(7 downto 0) := (others => '1');                      --tx data word output
             cfg_parity_setting       : in std_logic_vector(1 downto 0)  := "00";                                 -- 00 -> parity off, 01-> parity even, 10-> parity odd
             cfg_clkSpeed_over_bdRate : in std_logic_vector(31 downto 0) := std_logic_vector(to_unsigned(87, 32)) -- sets the effective baudrate; clk/bd, e.g. for a 10MHz clk and with 115.2k Bd: 10 000 000 / 115 200 = 86.8
             -- bits_per_word: integer := 8;--nr of data bits in each transmission; hardcoded to 8 
         );
     end component uartus;
-    constant c_bit_period             : time                          := (8600 ns); -- 115.2k Bd
+    constant c_bit_period             : time                          := ((10000000/115200) * 100 ns); -- 115.2k Bd
+    constant clk_period               : time                          := 100 ns;                       --10MHz
     signal s_clk                      : std_logic                     := '1';
     signal s_rst                      : std_logic                     := '0';
     signal s_tx_data                  : std_logic                     := '1';
@@ -37,18 +38,18 @@ architecture rtl of uartus_tb is
 
     procedure send_uart_data(s_rx_test_data : in std_logic_vector(7 downto 0); signal s_rx_data : out std_logic) is
     begin
-        s_rx_data <= '0';
+        s_rx_data <= '0'; --starting bit
         wait for c_bit_period;
-        for i in 0 to 7 loop
+        for i in 0 to 7 loop --data word
             s_rx_data <= s_rx_test_data(i);
             wait for c_bit_period;
         end loop;
-        s_rx_data <= '1';
+        s_rx_data <= '1'; --end bit
         wait for c_bit_period;
     end procedure;
 
 begin
-    s_clk <= not s_clk after 50 ns;
+    s_clk <= not s_clk after clk_period/2;
 
     uut : uartus
     port map(
@@ -73,16 +74,12 @@ begin
         s_rst <= '0';
         wait for 100 ns;
         send_uart_data(x"AA", s_rx_data_in);
-        wait for c_bit_period;
-
-        report "s_rx_finished_out=";
-        report std_logic'image(s_rx_finished_out);
-
         send_uart_data(x"FF", s_rx_data_in);
+        send_uart_data(x"B9", s_rx_data_in);
 
-        wait for c_bit_period * 10;
+        wait for clk_period * 10;
         s_tx_start <= '1';
-        wait for c_bit_period * 10;
+        wait for clk_period * 10;
         s_tx_start <= '0';
         wait;
     end process;
