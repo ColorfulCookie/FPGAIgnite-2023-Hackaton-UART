@@ -2,36 +2,36 @@
 -- To ensure that the UART clock is still correct when recieving data, the UART clock
 -- can be reset if a start bit is detected. Because this always happens for each sent byte, 
 -- the UART clock will always be in sync with the data.
-LIBRARY ieee;
-USE ieee.std_logic_1164.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
-ENTITY uart_clock IS
-    GENERIC (
-        g_clk_freq : INTEGER := 12_000_000;
-        g_baud_rate : INTEGER := 115_200
+entity uart_clock is
+    port (
+        I_clk            : in std_logic;
+        I_reset          : in std_logic;
+        I_sampling_delay : in std_logic_vector(31 downto 0);
+        O_clk            : out std_logic
     );
-    PORT (
-        I_clk : IN STD_LOGIC;
-        I_reset : IN STD_LOGIC;
-        O_clk : OUT STD_LOGIC
-    );
-END ENTITY uart_clock;
-ARCHITECTURE rtl OF uart_clock IS
-    SIGNAL s_clk : STD_LOGIC := '0';
-    SIGNAL s_counter : INTEGER RANGE 0 TO g_clk_freq / g_baud_rate / 2 - 1 := 0;
-BEGIN
-    O_clk_process : PROCESS (I_clk, I_reset)
-    BEGIN
-        IF I_reset = '1' THEN
+end entity uart_clock;
+
+architecture rtl of uart_clock is
+    signal s_clk     : std_logic                      := '0';
+    signal s_counter : integer range 0 to 2 ** 32 - 1 := 0;
+begin
+    O_clk_process : process (I_clk, I_reset)
+    begin
+        if I_reset = '1' then
             s_clk <= '0';
-        ELSIF falling_edge(I_clk) THEN
-            IF s_counter = g_clk_freq / g_baud_rate / 2 - 1 THEN
-                s_clk <= NOT s_clk;
+            elsif falling_edge(I_clk) then
+            -- if s_counter = g_clk_freq / g_baud_rate / 2 - 1 then
+            if s_counter = to_integer(unsigned(I_sampling_delay)) / 2 - 1 then
+                s_clk     <= not s_clk;
                 s_counter <= 0;
-            ELSE
+                else
                 s_counter <= s_counter + 1;
-            END IF;
-        END IF;
-    END PROCESS O_clk_process;
+            end if;
+        end if;
+    end process O_clk_process;
     O_clk <= s_clk;
-END ARCHITECTURE;
+end architecture;
