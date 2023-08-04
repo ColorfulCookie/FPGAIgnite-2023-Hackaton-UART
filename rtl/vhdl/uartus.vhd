@@ -9,7 +9,7 @@ entity uartus is
         tx_data_out              : out std_logic                    := '1';                                  --transmission bit output (Tx) (continuous 1 for 'off')
         tx_ready                 : out std_logic                    := '0';                                  -- port for signaling begin ready to transmit a new data word
         tx_data_word_in          : in std_logic_vector(7 downto 0)  := (others => '1');                      --transmission word (Tx) (continuous 1 for 'off')
-        tx_start                 : in std_logic                     := '0';                                  -- signal to start transmittion
+        tx_start                 : in std_logic                     := '0';                                  -- signal to start transmission
         rx_data_in               : in std_logic                     := '1';                                  --receiving bit (Rx) (continuous 1 for 'off')
         rx_finished_out          : out std_logic                    := '0';                                  --port for signaling having finished receiving a data word
         rx_data_word_out         : out std_logic_vector(7 downto 0) := (others => '1');                      --tx data word output
@@ -45,7 +45,7 @@ architecture behav of uartus is
     signal rx_reg         : std_logic_vector((bits_per_word - 1) downto 0) := (others => '1'); --RX register
     signal rx_bit_counter : integer range 0 to 63                          := 0;               --bit counter
     signal rx_counter_rst : std_logic                                      := '0';             --reset signal for the bit counter
-    signal rx_uart_clk    : std_logic                                      := '0';             --clock for correct transmittion delay
+    signal rx_uart_clk    : std_logic                                      := '0';             --clock for correct transmission delay
     --tx signals
     type state_type_tx is (tx_idle, tx_starting, tx_sending, tx_finished);
     signal tx_state          : state_type_tx                                     := tx_idle;         --FSM state for the tx
@@ -53,7 +53,7 @@ architecture behav of uartus is
     signal tx_bit_counter    : integer range 0 to 15                             := 0;               --bit counter
     signal tx_counter_rst    : std_logic                                         := '0';             --reset signal for the bit counter
     signal tx_start_internal : std_logic                                         := '0';             --internal starting signal for the tx
-    signal tx_parity_bit     : std_logic                                         := '0';             --parity bit   
+    -- signal tx_parity_bit     : std_logic                                         := '0';             --parity bit   
     signal tx_uart_clk       : std_logic                                         := '0';             --clock for correct sampling
 
     --components
@@ -84,7 +84,6 @@ begin
     ------------------------------------------------------------------------------
     --RX
     ------------------------------------------------------------------------------
-    --DONE
     -- FSM for the RX  flow contro
     fsm_rx_process : process (clk) begin
         if (rising_edge(clk)) then
@@ -118,7 +117,6 @@ begin
         end if;
     end process;
 
-    --DONE
     --set and release the RX finished signal
     rx_finished_process : process (clk) begin
         if (rising_edge(clk)) then
@@ -146,7 +144,6 @@ begin
         end if;
     end process;
 
-    --DONE
     -- Counter for the RX FSM  
     rx_counter_process : process (rx_uart_clk, rx_counter_rst) begin
         if (rx_counter_rst = '1') then
@@ -158,7 +155,6 @@ begin
         end if;
     end process;
 
-    --DONE
     -- RX data flow
     rx_data_in_process : process (rx_uart_clk) begin
         if (rising_edge(rx_uart_clk)) then
@@ -194,12 +190,12 @@ begin
                     when tx_starting =>    --start receiving
                         tx_counter_rst <= '1'; --reset counter
                         tx_state       <= tx_sending;
-                    when tx_sending =>                                 --during receving: if transmitting is finished, go to finished state and reset counter, else keep on transmitting
-                        tx_counter_rst <= '0';                             --release counter reset
-                        if (tx_bit_counter >= (bits_per_package - 1)) then --bits per message + starting bit + ending bit + parity bit - starting at 0
-                            tx_state <= tx_finished;
-                        else
+                    when tx_sending =>         --during receving: if transmitting is finished, go to finished state and reset counter, else keep on transmitting
+                        tx_counter_rst     <= '0'; --release counter reset
+                        if (tx_bit_counter <= (bits_per_package)) then
                             null;
+                        else
+                            tx_state <= tx_finished;
                         end if;
                     when tx_finished =>
                         tx_counter_rst <= '0';
@@ -210,7 +206,6 @@ begin
         end if;
     end process;
 
-    --DONE
     --set and release in internal TX starting signal
     tx_start_internal_process : process (clk) begin
         if (rising_edge(clk)) then
@@ -224,7 +219,6 @@ begin
         end if;
     end process;
 
-    --DONE
     --set and release the TX ready signal
     tx_ready_process : process (clk) begin
         case tx_state is
@@ -237,7 +231,6 @@ begin
         end case;
     end process;
 
-    --DONE
     -- Counter for the TX FSM
     tx_counter_process : process (tx_uart_clk, tx_counter_rst) begin
         if tx_counter_rst = '1' then
@@ -249,14 +242,14 @@ begin
         end if;
     end process;
 
-    --DONE
     -- TX data flow
     tx_data_process : process (tx_uart_clk, rst) begin
         if (rising_edge(tx_uart_clk)) then
             if (rst = '1') then
-                tx_data_out <= '1';
-            elsif (tx_bit_counter < 11 and tx_bit_counter > 0) then
-                tx_data_out <= tx_reg((bits_per_package - 1) - tx_bit_counter);
+                tx_data_out            <= '1';
+            elsif ((tx_bit_counter <= bits_per_package) and (tx_bit_counter > 0)) then
+                tx_data_out            <= tx_reg(tx_bit_counter - 1);
+                report integer'image(tx_bit_counter);
             else
                 null;
             end if;
@@ -278,25 +271,4 @@ begin
         end if;
     end process;
 
-    --DONE
-    --handle the parity bit in the TX 
-    -- tx_parity_bit_process : process (clk) begin
-    --     if rising_edge(clk) then
-    --         if (rst = '1') then
-    --             tx_parity_bit <= '1';
-    --         elsif (tx_state = tx_starting) then
-    --             if (cfg_parity_setting = "00") then
-    --                 tx_parity_bit <= '1'; -- no parity
-    --             elsif (cfg_parity_setting = "11") then
-    --                 tx_parity_bit <= '1'; -- no parity
-    --             elsif (cfg_parity_setting = "01") then
-    --                 tx_parity_bit <= xnor_reduce(tx_data_word_in); -- even parity
-    --             elsif (cfg_parity_setting = "10") then
-    --                 tx_parity_bit <= xor_reduce(tx_data_word_in); -- odd parity
-    --             else
-    --                 tx_parity_bit <= '1'; -- no parity
-    --             end if;
-    --         end if;
-    --     end if;
-    -- end process;
 end architecture behav;
