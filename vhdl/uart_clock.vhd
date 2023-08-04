@@ -16,8 +16,10 @@ entity uart_clock is
 end entity uart_clock;
 
 architecture rtl of uart_clock is
-    signal s_clk     : std_logic                      := '0';
-    signal s_counter : integer range 0 to 2 ** 32 - 1 := 0;
+    signal s_clk     : std_logic             := '0';
+    -- signal s_counter : integer range 0 to 2 ** 32 - 1 := 0;
+    signal s_counter : unsigned(31 downto 0) := to_unsigned(0, 32);
+
 begin
     O_clk_process : process (I_clk, I_reset)
     begin
@@ -25,11 +27,11 @@ begin
             s_clk <= '0';
             elsif falling_edge(I_clk) then
             -- if s_counter = g_clk_freq / g_baud_rate / 2 - 1 then
-            if s_counter = to_integer(unsigned(I_sampling_delay)) / 2 - 1 then
+            if to_integer(s_counter) = to_integer(unsigned(I_sampling_delay)) / 2 - 1 then
                 s_clk     <= not s_clk;
-                s_counter <= 0;
+                s_counter <= to_unsigned(0, 32);
                 else
-                s_counter <= s_counter + 1;
+                s_counter <= to_unsigned(to_integer(s_counter) + 1, 32);
             end if;
         end if;
     end process O_clk_process;
