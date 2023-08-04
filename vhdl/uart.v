@@ -5,81 +5,81 @@ module uart_clock
    output o_clk);
   reg s_clk;
   reg [31:0] s_counter;
-  wire [30:0] n234_o;
-  wire [31:0] n235_o;
-  wire [30:0] n236_o;
-  wire [31:0] n237_o;
-  wire [31:0] n239_o;
-  wire [31:0] n241_o;
-  wire n242_o;
-  wire n243_o;
-  wire [30:0] n244_o;
-  wire [31:0] n245_o;
-  wire [31:0] n247_o;
-  wire [30:0] n248_o;
-  wire [31:0] n249_o;
+  wire [30:0] n251_o;
   wire [31:0] n252_o;
+  wire [30:0] n253_o;
+  wire [31:0] n254_o;
+  wire [31:0] n256_o;
+  wire [31:0] n258_o;
   wire n259_o;
-  reg n260_q;
-  wire n261_o;
+  wire n260_o;
+  wire [30:0] n261_o;
   wire [31:0] n262_o;
-  reg [31:0] n263_q;
+  wire [31:0] n264_o;
+  wire [30:0] n265_o;
+  wire [31:0] n266_o;
+  wire [31:0] n269_o;
+  wire n276_o;
+  reg n277_q;
+  wire n278_o;
+  wire [31:0] n279_o;
+  reg [31:0] n280_q;
   assign o_clk = s_clk;
   /* uart_clock.vhd:19:12  */
   always @*
-    s_clk = n260_q; // (isignal)
+    s_clk = n277_q; // (isignal)
   initial
     s_clk = 1'b0;
   /* uart_clock.vhd:21:12  */
   always @*
-    s_counter = n263_q; // (isignal)
+    s_counter = n280_q; // (isignal)
   initial
     s_counter = 32'b00000000000000000000000000000000;
-  /* uart_clock.vhd:30:16  */
-  assign n234_o = s_counter[30:0];  // trunc
-  /* uart_clock.vhd:30:38  */
-  assign n235_o = {1'b0, n234_o};  //  uext
-  /* uart_clock.vhd:30:40  */
-  assign n236_o = i_sampling_delay[30:0];  // trunc
-  /* uart_clock.vhd:30:79  */
-  assign n237_o = {1'b0, n236_o};  //  uext
-  /* uart_clock.vhd:30:79  */
-  assign n239_o = n237_o / 32'b00000000000000000000000000000010; // sdiv
+  /* uart_clock.vhd:30:18  */
+  assign n251_o = s_counter[30:0];  // trunc
+  /* uart_clock.vhd:30:41  */
+  assign n252_o = {1'b0, n251_o};  //  uext
+  /* uart_clock.vhd:30:44  */
+  assign n253_o = i_sampling_delay[30:0];  // trunc
   /* uart_clock.vhd:30:83  */
-  assign n241_o = n239_o - 32'b00000000000000000000000000000001;
-  /* uart_clock.vhd:30:38  */
-  assign n242_o = n235_o == n241_o;
+  assign n254_o = {1'b0, n253_o};  //  uext
+  /* uart_clock.vhd:30:83  */
+  assign n256_o = n254_o / 32'b00000000000000000000000000000010; // sdiv
+  /* uart_clock.vhd:30:87  */
+  assign n258_o = n256_o - 32'b00000000000000000000000000000001;
+  /* uart_clock.vhd:30:41  */
+  assign n259_o = n252_o == n258_o;
   /* uart_clock.vhd:31:30  */
-  assign n243_o = ~s_clk;
+  assign n260_o = ~s_clk;
   /* uart_clock.vhd:34:42  */
-  assign n244_o = s_counter[30:0];  // trunc
+  assign n261_o = s_counter[30:0];  // trunc
   /* uart_clock.vhd:34:64  */
-  assign n245_o = {1'b0, n244_o};  //  uext
+  assign n262_o = {1'b0, n261_o};  //  uext
   /* uart_clock.vhd:34:64  */
-  assign n247_o = n245_o + 32'b00000000000000000000000000000001;
+  assign n264_o = n262_o + 32'b00000000000000000000000000000001;
   /* uart_clock.vhd:34:42  */
-  assign n248_o = n247_o[30:0];  // trunc
+  assign n265_o = n264_o[30:0];  // trunc
   /* uart_clock.vhd:34:30  */
-  assign n249_o = {1'b0, n248_o};  //  uext
+  assign n266_o = {1'b0, n265_o};  //  uext
   /* uart_clock.vhd:30:13  */
-  assign n252_o = n242_o ? 32'b00000000000000000000000000000000 : n249_o;
-  /* uart_clock.vhd:28:13  */
-  assign n259_o = n242_o ? n243_o : s_clk;
-  /* uart_clock.vhd:28:13  */
+  assign n269_o = n259_o ? 32'b00000000000000000000000000000000 : n266_o;
+  /* uart_clock.vhd:28:9  */
+  assign n276_o = n259_o ? n260_o : s_clk;
+  /* uart_clock.vhd:28:9  */
   always @(negedge i_clk or posedge i_reset)
     if (i_reset)
-      n260_q <= 1'b0;
+      n277_q <= 1'b0;
     else
-      n260_q <= n259_o;
+      n277_q <= n276_o;
   /* uart_clock.vhd:24:5  */
-  assign n261_o = ~i_reset;
-  /* uart_clock.vhd:28:13  */
-  assign n262_o = n261_o ? n252_o : s_counter;
-  /* uart_clock.vhd:28:13  */
+  assign n278_o = ~i_reset;
+  /* uart_clock.vhd:28:9  */
+  assign n279_o = n278_o ? n269_o : s_counter;
+  /* uart_clock.vhd:28:9  */
   always @(negedge i_clk)
-    n263_q <= n262_o;
+    n280_q <= n279_o;
   initial
-    n263_q = 32'b00000000000000000000000000000000;
+    n280_q = 32'b00000000000000000000000000000000;
 endmodule
 
 module uart
@@ -122,88 +122,97 @@ module uart
   wire [3:0] n45_o;
   reg [1:0] n47_o;
   reg n52_o;
-  wire n58_o;
-  wire n60_o;
+  wire [1:0] n54_o;
+  wire n55_o;
   wire n62_o;
   wire n64_o;
-  wire [3:0] n65_o;
-  reg n70_o;
-  wire [31:0] n74_o;
-  wire [31:0] n76_o;
-  wire [3:0] n77_o;
-  wire [1:0] n100_o;
-  wire n102_o;
-  wire n104_o;
-  wire [31:0] n105_o;
-  wire n107_o;
+  wire n66_o;
+  wire n68_o;
+  wire [3:0] n69_o;
+  reg n74_o;
+  wire n76_o;
+  wire [31:0] n81_o;
+  wire [31:0] n83_o;
+  wire [3:0] n84_o;
   wire [1:0] n109_o;
   wire n111_o;
   wire n113_o;
-  wire [3:0] n114_o;
-  reg [1:0] n116_o;
-  reg n121_o;
-  wire n128_o;
-  wire n129_o;
-  wire n132_o;
-  wire n137_o;
-  wire n139_o;
-  wire [1:0] n140_o;
-  reg n144_o;
-  wire [31:0] n148_o;
-  wire [31:0] n150_o;
-  wire [3:0] n151_o;
-  wire [31:0] n158_o;
-  wire [31:0] n160_o;
-  wire [3:0] n161_o;
-  wire [1:0] n168_o;
-  wire [9:0] n169_o;
-  wire [10:0] n171_o;
-  wire n176_o;
-  wire n178_o;
-  wire n180_o;
-  wire n181_o;
-  wire n182_o;
-  wire n184_o;
-  wire n185_o;
-  wire n187_o;
-  wire n188_o;
-  wire n190_o;
-  reg [1:0] n194_q;
-  reg [3:0] n197_q;
-  reg n198_q;
-  reg [1:0] n199_q;
-  reg [3:0] n200_q;
-  reg n201_q;
-  reg n202_q;
+  wire [31:0] n114_o;
+  wire n116_o;
+  wire [1:0] n118_o;
+  wire n120_o;
+  wire n122_o;
+  wire [3:0] n123_o;
+  reg [1:0] n125_o;
+  reg n130_o;
+  wire [1:0] n132_o;
+  wire n133_o;
+  wire n140_o;
+  wire n141_o;
+  wire n144_o;
+  wire n146_o;
+  wire n151_o;
+  wire n153_o;
+  wire [1:0] n154_o;
+  reg n158_o;
+  wire [31:0] n162_o;
+  wire [31:0] n164_o;
+  wire [3:0] n165_o;
+  wire [31:0] n172_o;
+  wire [31:0] n174_o;
+  wire [3:0] n175_o;
+  wire n179_o;
+  wire [1:0] n184_o;
+  wire [9:0] n185_o;
+  wire [10:0] n187_o;
+  wire n192_o;
+  wire n194_o;
+  wire n196_o;
+  wire n197_o;
+  wire n198_o;
+  wire n200_o;
+  wire n201_o;
   wire n203_o;
-  reg n204_q;
-  reg n205_q;
+  wire n204_o;
   wire n206_o;
   wire n207_o;
-  wire n208_o;
   wire n209_o;
-  wire n210_o;
-  wire n211_o;
-  wire n212_o;
-  wire n213_o;
-  wire n214_o;
-  wire n215_o;
-  wire n216_o;
-  wire [1:0] n217_o;
-  reg n218_o;
-  wire [1:0] n219_o;
-  reg n220_o;
-  wire n221_o;
-  wire n222_o;
+  reg [1:0] n212_q;
+  reg [3:0] n214_q;
+  reg n215_q;
+  reg [1:0] n216_q;
+  reg [3:0] n217_q;
+  reg n218_q;
+  reg n219_q;
+  reg n220_q;
+  reg n221_q;
+  reg n222_q;
   wire n223_o;
   wire n224_o;
   wire n225_o;
   wire n226_o;
   wire n227_o;
   wire n228_o;
-  assign tx_data_out = n205_q;
-  assign tx_ready = n144_o;
-  assign rx_finished_out = n70_o;
+  wire n229_o;
+  wire n230_o;
+  wire n231_o;
+  wire n232_o;
+  wire n233_o;
+  wire [1:0] n234_o;
+  reg n235_o;
+  wire [1:0] n236_o;
+  reg n237_o;
+  wire n238_o;
+  wire n239_o;
+  wire n240_o;
+  wire n241_o;
+  wire n242_o;
+  wire n243_o;
+  wire n244_o;
+  wire n245_o;
+  assign tx_data_out = n221_q;
+  assign tx_ready = n158_o;
+  assign rx_finished_out = n222_q;
   /* uart.vhd:39:12  */
   always @*
     sampling_delay = cfg_clkSpeed_over_bdRate; // (isignal)
@@ -211,17 +220,17 @@ module uart
     sampling_delay = 32'b00000000000000000000000000000000;
   /* uart.vhd:42:12  */
   always @*
-    rx_state = n194_q; // (isignal)
+    rx_state = n212_q; // (isignal)
   initial
     rx_state = 2'b00;
   /* uart.vhd:44:12  */
   always @*
-    rx_bit_counter = n197_q; // (isignal)
+    rx_bit_counter = n214_q; // (isignal)
   initial
     rx_bit_counter = 4'b0000;
   /* uart.vhd:45:12  */
   always @*
-    rx_counter_rst = n198_q; // (isignal)
+    rx_counter_rst = n215_q; // (isignal)
   initial
     rx_counter_rst = 1'b0;
   /* uart.vhd:46:12  */
@@ -231,32 +240,32 @@ module uart
     rx_uart_clk = 1'b0;
   /* uart.vhd:49:12  */
   always @*
-    tx_state = n199_q; // (isignal)
+    tx_state = n216_q; // (isignal)
   initial
     tx_state = 2'b00;
   /* uart.vhd:50:12  */
   always @*
-    tx_reg = n171_o; // (isignal)
+    tx_reg = n187_o; // (isignal)
   initial
     tx_reg = 11'b11111111111;
   /* uart.vhd:51:12  */
   always @*
-    tx_bit_counter = n200_q; // (isignal)
+    tx_bit_counter = n217_q; // (isignal)
   initial
     tx_bit_counter = 4'b0000;
   /* uart.vhd:52:12  */
   always @*
-    tx_counter_rst = n201_q; // (isignal)
+    tx_counter_rst = n218_q; // (isignal)
   initial
     tx_counter_rst = 1'b0;
   /* uart.vhd:53:12  */
   always @*
-    tx_start_internal = n202_q; // (isignal)
+    tx_start_internal = n219_q; // (isignal)
   initial
     tx_start_internal = 1'b0;
   /* uart.vhd:54:12  */
   always @*
-    tx_parity_bit = n204_q; // (isignal)
+    tx_parity_bit = n220_q; // (isignal)
   initial
     tx_parity_bit = 1'b0;
   /* uart.vhd:55:12  */
@@ -280,26 +289,26 @@ module uart
     .i_reset(n22_o),
     .i_sampling_delay(sampling_delay),
     .o_clk(uart_clk_tx_ent_o_clk));
-  /* uart.vhd:91:33  */
+  /* uart.vhd:95:37  */
   assign n28_o = ~rx_data;
-  /* uart.vhd:91:21  */
+  /* uart.vhd:95:25  */
   assign n31_o = n28_o ? 2'b01 : 2'b00;
-  /* uart.vhd:89:17  */
+  /* uart.vhd:93:21  */
   assign n33_o = rx_state == 2'b00;
-  /* uart.vhd:96:17  */
+  /* uart.vhd:100:21  */
   assign n35_o = rx_state == 2'b01;
-  /* uart.vhd:101:40  */
+  /* uart.vhd:105:44  */
   assign n36_o = {28'b0, rx_bit_counter};  //  uext
-  /* uart.vhd:101:40  */
+  /* uart.vhd:105:44  */
   assign n38_o = $signed(n36_o) >= $signed(32'b00000000000000000000000000001010);
-  /* uart.vhd:101:21  */
+  /* uart.vhd:105:25  */
   assign n40_o = n38_o ? 2'b11 : rx_state;
-  /* uart.vhd:99:17  */
+  /* uart.vhd:103:21  */
   assign n42_o = rx_state == 2'b10;
-  /* uart.vhd:106:17  */
+  /* uart.vhd:110:21  */
   assign n44_o = rx_state == 2'b11;
   assign n45_o = {n44_o, n42_o, n35_o, n33_o};
-  /* uart.vhd:88:13  */
+  /* uart.vhd:92:17  */
   always @*
     case (n45_o)
       4'b1000: n47_o = rx_state;
@@ -308,7 +317,7 @@ module uart
       4'b0001: n47_o = n31_o;
       default: n47_o = rx_state;
     endcase
-  /* uart.vhd:88:13  */
+  /* uart.vhd:92:17  */
   always @*
     case (n45_o)
       4'b1000: n52_o = 1'b0;
@@ -317,225 +326,242 @@ module uart
       4'b0001: n52_o = 1'b0;
       default: n52_o = rx_counter_rst;
     endcase
-  /* uart.vhd:116:13  */
-  assign n58_o = rx_state == 2'b00;
-  /* uart.vhd:118:13  */
-  assign n60_o = rx_state == 2'b01;
-  /* uart.vhd:120:13  */
-  assign n62_o = rx_state == 2'b10;
+  /* uart.vhd:89:13  */
+  assign n54_o = rst ? 2'b00 : n47_o;
+  /* uart.vhd:89:13  */
+  assign n55_o = rst ? rx_counter_rst : n52_o;
+  /* uart.vhd:126:21  */
+  assign n62_o = rx_state == 2'b00;
+  /* uart.vhd:128:21  */
+  assign n64_o = rx_state == 2'b01;
+  /* uart.vhd:130:21  */
+  assign n66_o = rx_state == 2'b10;
+  /* uart.vhd:132:21  */
+  assign n68_o = rx_state == 2'b11;
+  assign n69_o = {n68_o, n66_o, n64_o, n62_o};
+  /* uart.vhd:125:17  */
+  always @*
+    case (n69_o)
+      4'b1000: n74_o = 1'b1;
+      4'b0100: n74_o = 1'b0;
+      4'b0010: n74_o = 1'b0;
+      4'b0001: n74_o = n222_q;
+      default: n74_o = 1'b0;
+    endcase
   /* uart.vhd:122:13  */
-  assign n64_o = rx_state == 2'b11;
-  assign n65_o = {n64_o, n62_o, n60_o, n58_o};
-  /* uart.vhd:115:9  */
+  assign n76_o = rst ? 1'b0 : n74_o;
+  /* uart.vhd:147:46  */
+  assign n81_o = {28'b0, rx_bit_counter};  //  uext
+  /* uart.vhd:147:46  */
+  assign n83_o = n81_o + 32'b00000000000000000000000000000001;
+  /* uart.vhd:147:31  */
+  assign n84_o = n83_o[3:0];  // trunc
+  /* uart.vhd:175:25  */
+  assign n109_o = tx_start_internal ? 2'b01 : 2'b00;
+  /* uart.vhd:173:21  */
+  assign n111_o = tx_state == 2'b00;
+  /* uart.vhd:180:21  */
+  assign n113_o = tx_state == 2'b01;
+  /* uart.vhd:185:44  */
+  assign n114_o = {28'b0, tx_bit_counter};  //  uext
+  /* uart.vhd:185:44  */
+  assign n116_o = $signed(n114_o) >= $signed(32'b00000000000000000000000000001010);
+  /* uart.vhd:185:25  */
+  assign n118_o = n116_o ? 2'b11 : tx_state;
+  /* uart.vhd:183:21  */
+  assign n120_o = tx_state == 2'b10;
+  /* uart.vhd:190:21  */
+  assign n122_o = tx_state == 2'b11;
+  assign n123_o = {n122_o, n120_o, n113_o, n111_o};
+  /* uart.vhd:172:17  */
   always @*
-    case (n65_o)
-      4'b1000: n70_o = 1'b1;
-      4'b0100: n70_o = 1'b0;
-      4'b0010: n70_o = 1'b0;
-      4'b0001: n70_o = n70_o;
-      default: n70_o = 1'b0;
+    case (n123_o)
+      4'b1000: n125_o = tx_state;
+      4'b0100: n125_o = n118_o;
+      4'b0010: n125_o = 2'b10;
+      4'b0001: n125_o = n109_o;
+      default: n125_o = tx_state;
     endcase
-  /* uart.vhd:134:46  */
-  assign n74_o = {28'b0, rx_bit_counter};  //  uext
-  /* uart.vhd:134:46  */
-  assign n76_o = n74_o + 32'b00000000000000000000000000000001;
-  /* uart.vhd:134:31  */
-  assign n77_o = n76_o[3:0];  // trunc
-  /* uart.vhd:156:21  */
-  assign n100_o = tx_start_internal ? 2'b01 : 2'b00;
-  /* uart.vhd:154:17  */
-  assign n102_o = tx_state == 2'b00;
-  /* uart.vhd:161:17  */
-  assign n104_o = tx_state == 2'b01;
-  /* uart.vhd:166:40  */
-  assign n105_o = {28'b0, tx_bit_counter};  //  uext
-  /* uart.vhd:166:40  */
-  assign n107_o = $signed(n105_o) >= $signed(32'b00000000000000000000000000001010);
-  /* uart.vhd:166:21  */
-  assign n109_o = n107_o ? 2'b11 : tx_state;
-  /* uart.vhd:164:17  */
-  assign n111_o = tx_state == 2'b10;
-  /* uart.vhd:171:17  */
-  assign n113_o = tx_state == 2'b11;
-  assign n114_o = {n113_o, n111_o, n104_o, n102_o};
-  /* uart.vhd:153:13  */
+  /* uart.vhd:172:17  */
   always @*
-    case (n114_o)
-      4'b1000: n116_o = tx_state;
-      4'b0100: n116_o = n109_o;
-      4'b0010: n116_o = 2'b10;
-      4'b0001: n116_o = n100_o;
-      default: n116_o = tx_state;
+    case (n123_o)
+      4'b1000: n130_o = 1'b0;
+      4'b0100: n130_o = 1'b0;
+      4'b0010: n130_o = 1'b1;
+      4'b0001: n130_o = 1'b0;
+      default: n130_o = tx_counter_rst;
     endcase
-  /* uart.vhd:153:13  */
+  /* uart.vhd:169:13  */
+  assign n132_o = rst ? 2'b00 : n125_o;
+  /* uart.vhd:169:13  */
+  assign n133_o = rst ? tx_counter_rst : n130_o;
+  /* uart.vhd:204:51  */
+  assign n140_o = tx_state == 2'b00;
+  /* uart.vhd:204:37  */
+  assign n141_o = tx_start & n140_o;
+  /* uart.vhd:204:13  */
+  assign n144_o = n141_o ? 1'b1 : 1'b0;
+  /* uart.vhd:202:13  */
+  assign n146_o = rst ? 1'b0 : n144_o;
+  /* uart.vhd:216:13  */
+  assign n151_o = tx_state == 2'b01;
+  /* uart.vhd:218:13  */
+  assign n153_o = tx_state == 2'b10;
+  assign n154_o = {n153_o, n151_o};
+  /* uart.vhd:215:9  */
   always @*
-    case (n114_o)
-      4'b1000: n121_o = 1'b0;
-      4'b0100: n121_o = 1'b0;
-      4'b0010: n121_o = 1'b1;
-      4'b0001: n121_o = 1'b0;
-      default: n121_o = tx_counter_rst;
+    case (n154_o)
+      2'b10: n158_o = 1'b0;
+      2'b01: n158_o = 1'b0;
+      default: n158_o = 1'b1;
     endcase
-  /* uart.vhd:181:46  */
-  assign n128_o = tx_state == 2'b00;
-  /* uart.vhd:181:33  */
-  assign n129_o = tx_start & n128_o;
-  /* uart.vhd:181:13  */
-  assign n132_o = n129_o ? 1'b1 : 1'b0;
-  /* uart.vhd:192:13  */
-  assign n137_o = tx_state == 2'b01;
-  /* uart.vhd:194:13  */
-  assign n139_o = tx_state == 2'b10;
-  assign n140_o = {n139_o, n137_o};
-  /* uart.vhd:191:9  */
-  always @*
-    case (n140_o)
-      2'b10: n144_o = 1'b0;
-      2'b01: n144_o = 1'b0;
-      default: n144_o = 1'b1;
-    endcase
-  /* uart.vhd:206:46  */
-  assign n148_o = {28'b0, tx_bit_counter};  //  uext
-  /* uart.vhd:206:46  */
-  assign n150_o = n148_o + 32'b00000000000000000000000000000001;
-  /* uart.vhd:206:31  */
-  assign n151_o = n150_o[3:0];  // trunc
-  /* uart.vhd:213:52  */
-  assign n158_o = {28'b0, tx_bit_counter};  //  uext
-  /* uart.vhd:213:52  */
-  assign n160_o = 32'b00000000000000000000000000001010 - n158_o;
-  /* uart.vhd:213:52  */
-  assign n161_o = n160_o[3:0];  // trunc
-  /* uart.vhd:219:23  */
-  assign n168_o = {1'b1, tx_parity_bit};
-  /* uart.vhd:219:39  */
-  assign n169_o = {n168_o, tx_data_word};
-  /* uart.vhd:219:54  */
-  assign n171_o = {n169_o, 1'b0};
-  /* uart.vhd:225:26  */
-  assign n176_o = tx_state == 2'b01;
-  /* uart.vhd:226:40  */
-  assign n178_o = cfg_parity_setting == 2'b00;
-  /* uart.vhd:228:47  */
-  assign n180_o = cfg_parity_setting == 2'b01;
-  /* uart.vhd:229:38  */
-  assign n181_o = ^(tx_data_word);
-  /* uart.vhd:229:38  */
-  assign n182_o = ~n181_o;
-  /* uart.vhd:230:47  */
-  assign n184_o = cfg_parity_setting == 2'b10;
-  /* uart.vhd:231:38  */
-  assign n185_o = ^(tx_data_word);
-  /* uart.vhd:230:21  */
-  assign n187_o = n184_o ? n185_o : 1'b1;
-  /* uart.vhd:228:21  */
-  assign n188_o = n180_o ? n182_o : n187_o;
-  /* uart.vhd:226:17  */
-  assign n190_o = n178_o ? 1'b1 : n188_o;
-  /* uart.vhd:87:9  */
+  /* uart.vhd:231:46  */
+  assign n162_o = {28'b0, tx_bit_counter};  //  uext
+  /* uart.vhd:231:46  */
+  assign n164_o = n162_o + 32'b00000000000000000000000000000001;
+  /* uart.vhd:231:31  */
+  assign n165_o = n164_o[3:0];  // trunc
+  /* uart.vhd:242:56  */
+  assign n172_o = {28'b0, tx_bit_counter};  //  uext
+  /* uart.vhd:242:56  */
+  assign n174_o = 32'b00000000000000000000000000001010 - n172_o;
+  /* uart.vhd:242:56  */
+  assign n175_o = n174_o[3:0];  // trunc
+  /* uart.vhd:239:13  */
+  assign n179_o = rst ? 1'b1 : n245_o;
+  /* uart.vhd:249:23  */
+  assign n184_o = {1'b1, tx_parity_bit};
+  /* uart.vhd:249:39  */
+  assign n185_o = {n184_o, tx_data_word};
+  /* uart.vhd:249:54  */
+  assign n187_o = {n185_o, 1'b0};
+  /* uart.vhd:258:29  */
+  assign n192_o = tx_state == 2'b01;
+  /* uart.vhd:259:40  */
+  assign n194_o = cfg_parity_setting == 2'b00;
+  /* uart.vhd:261:43  */
+  assign n196_o = cfg_parity_setting == 2'b01;
+  /* uart.vhd:262:38  */
+  assign n197_o = ^(tx_data_word);
+  /* uart.vhd:262:38  */
+  assign n198_o = ~n197_o;
+  /* uart.vhd:263:43  */
+  assign n200_o = cfg_parity_setting == 2'b10;
+  /* uart.vhd:264:38  */
+  assign n201_o = ^(tx_data_word);
+  /* uart.vhd:263:17  */
+  assign n203_o = n200_o ? n201_o : 1'b1;
+  /* uart.vhd:261:17  */
+  assign n204_o = n196_o ? n198_o : n203_o;
+  /* uart.vhd:259:17  */
+  assign n206_o = n194_o ? 1'b1 : n204_o;
+  /* uart.vhd:258:13  */
+  assign n207_o = n192_o ? n206_o : tx_parity_bit;
+  /* uart.vhd:256:13  */
+  assign n209_o = rst ? 1'b1 : n207_o;
+  /* uart.vhd:88:9  */
   always @(posedge clk)
-    n194_q <= n47_o;
+    n212_q <= n54_o;
   initial
-    n194_q = 2'b00;
-  /* uart.vhd:133:13  */
+    n212_q = 2'b00;
+  /* uart.vhd:146:9  */
   always @(posedge rx_uart_clk or posedge rx_counter_rst)
     if (rx_counter_rst)
-      n197_q <= 4'b0000;
+      n214_q <= 4'b0000;
     else
-      n197_q <= n77_o;
-  /* uart.vhd:87:9  */
+      n214_q <= n84_o;
+  /* uart.vhd:88:9  */
   always @(posedge clk)
-    n198_q <= n52_o;
+    n215_q <= n55_o;
   initial
-    n198_q = 1'b0;
-  /* uart.vhd:152:9  */
+    n215_q = 1'b0;
+  /* uart.vhd:168:9  */
   always @(posedge clk)
-    n199_q <= n116_o;
+    n216_q <= n132_o;
   initial
-    n199_q = 2'b00;
-  /* uart.vhd:205:13  */
+    n216_q = 2'b00;
+  /* uart.vhd:230:9  */
   always @(posedge tx_uart_clk or posedge tx_counter_rst)
     if (tx_counter_rst)
-      n200_q <= 4'b0000;
+      n217_q <= 4'b0000;
     else
-      n200_q <= n151_o;
-  /* uart.vhd:152:9  */
+      n217_q <= n165_o;
+  /* uart.vhd:168:9  */
   always @(posedge clk)
-    n201_q <= n121_o;
+    n218_q <= n133_o;
   initial
-    n201_q = 1'b0;
-  /* uart.vhd:180:9  */
+    n218_q = 1'b0;
+  /* uart.vhd:201:9  */
   always @(posedge clk)
-    n202_q <= n132_o;
+    n219_q <= n146_o;
   initial
-    n202_q = 1'b0;
-  /* uart.vhd:224:9  */
-  assign n203_o = n176_o ? n190_o : tx_parity_bit;
-  /* uart.vhd:224:9  */
+    n219_q = 1'b0;
+  /* uart.vhd:255:9  */
   always @(posedge clk)
-    n204_q <= n203_o;
+    n220_q <= n209_o;
   initial
-    n204_q = 1'b0;
-  /* uart.vhd:212:9  */
+    n220_q = 1'b0;
+  /* uart.vhd:238:9  */
   always @(posedge tx_uart_clk)
-    n205_q <= n228_o;
+    n221_q <= n179_o;
   initial
-    n205_q = 1'b1;
-  assign n206_o = tx_reg[0];
-  assign n207_o = tx_reg[1];
+    n221_q = 1'b1;
+  /* uart.vhd:121:9  */
+  always @(posedge clk)
+    n222_q <= n76_o;
+  initial
+    n222_q = 1'b0;
+  assign n223_o = tx_reg[0];
   /* uart.vhd:79:29  */
-  assign n208_o = tx_reg[2];
+  assign n224_o = tx_reg[1];
   /* uart.vhd:74:5  */
-  assign n209_o = tx_reg[3];
+  assign n225_o = tx_reg[2];
   /* uart.vhd:72:29  */
-  assign n210_o = tx_reg[4];
+  assign n226_o = tx_reg[3];
   /* uart.vhd:67:5  */
-  assign n211_o = tx_reg[5];
+  assign n227_o = tx_reg[4];
   /* uart.vhd:19:9  */
-  assign n212_o = tx_reg[6];
+  assign n228_o = tx_reg[5];
   /* uart.vhd:15:9  */
-  assign n213_o = tx_reg[7];
+  assign n229_o = tx_reg[6];
   /* uart.vhd:14:9  */
-  assign n214_o = tx_reg[8];
-  /* uart.vhd:140:9  */
-  assign n215_o = tx_reg[9];
-  /* uart.vhd:142:17  */
-  assign n216_o = tx_reg[10];
-  /* uart.vhd:213:34  */
-  assign n217_o = n161_o[1:0];
-  /* uart.vhd:213:34  */
+  assign n230_o = tx_reg[7];
+  /* uart.vhd:154:9  */
+  assign n231_o = tx_reg[8];
+  assign n232_o = tx_reg[9];
+  /* uart.vhd:254:5  */
+  assign n233_o = tx_reg[10];
+  /* uart.vhd:242:38  */
+  assign n234_o = n175_o[1:0];
+  /* uart.vhd:242:38  */
   always @*
-    case (n217_o)
-      2'b00: n218_o = n206_o;
-      2'b01: n218_o = n207_o;
-      2'b10: n218_o = n208_o;
-      2'b11: n218_o = n209_o;
+    case (n234_o)
+      2'b00: n235_o = n223_o;
+      2'b01: n235_o = n224_o;
+      2'b10: n235_o = n225_o;
+      2'b11: n235_o = n226_o;
     endcase
-  /* uart.vhd:213:34  */
-  assign n219_o = n161_o[1:0];
-  /* uart.vhd:213:34  */
+  /* uart.vhd:242:38  */
+  assign n236_o = n175_o[1:0];
+  /* uart.vhd:242:38  */
   always @*
-    case (n219_o)
-      2'b00: n220_o = n210_o;
-      2'b01: n220_o = n211_o;
-      2'b10: n220_o = n212_o;
-      2'b11: n220_o = n213_o;
+    case (n236_o)
+      2'b00: n237_o = n227_o;
+      2'b01: n237_o = n228_o;
+      2'b10: n237_o = n229_o;
+      2'b11: n237_o = n230_o;
     endcase
-  /* uart.vhd:218:5  */
-  assign n221_o = n161_o[0];
-  /* uart.vhd:213:34  */
-  assign n222_o = n221_o ? n215_o : n214_o;
-  /* uart.vhd:211:5  */
-  assign n223_o = n161_o[1];
-  /* uart.vhd:213:34  */
-  assign n224_o = n223_o ? n216_o : n222_o;
-  /* uart.vhd:202:5  */
-  assign n225_o = n161_o[2];
-  /* uart.vhd:213:34  */
-  assign n226_o = n225_o ? n220_o : n218_o;
-  /* uart.vhd:190:5  */
-  assign n227_o = n161_o[3];
-  /* uart.vhd:213:34  */
-  assign n228_o = n227_o ? n224_o : n226_o;
+  assign n238_o = n175_o[0];
+  /* uart.vhd:242:38  */
+  assign n239_o = n238_o ? n232_o : n231_o;
+  assign n240_o = n175_o[1];
+  /* uart.vhd:242:38  */
+  assign n241_o = n240_o ? n233_o : n239_o;
+  assign n242_o = n175_o[2];
+  /* uart.vhd:242:38  */
+  assign n243_o = n242_o ? n237_o : n235_o;
+  assign n244_o = n175_o[3];
+  /* uart.vhd:242:38  */
+  assign n245_o = n244_o ? n241_o : n243_o;
 endmodule
 
