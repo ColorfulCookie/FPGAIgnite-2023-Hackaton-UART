@@ -15,6 +15,18 @@ entity uart is
 end entity uart;
 
 architecture behav of uart is
+    component uart_clock IS
+    GENERIC (
+        g_clk_freq : INTEGER := 12_000_000;
+        g_baud_rate : INTEGER := 115_200
+    );
+    PORT (
+        I_clk : IN STD_LOGIC;
+        I_reset : IN STD_LOGIC;
+        O_clk : OUT STD_LOGIC
+    );
+    END Component uart_clock;
+
     --constant design variables
     constant bits_per_msg            : integer range(0 to 8) := 8;
     --design variables
