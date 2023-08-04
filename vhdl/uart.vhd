@@ -13,7 +13,7 @@ entity uart is
         rst                      : in std_logic                     := '0';             --reset is high active
         tx_data_out              : out std_logic                    := '1';             --transmission bit output (Tx) (continuous 1 for 'off')
         tx_ready                 : out std_logic                    := '0';             -- port for signaling begin ready to transmit a new data word
-        tx_data_word             : out std_logic_vector(7 downto 0) := (others => '1'); --transmission word (Tx) (continuous 1 for 'off')
+        tx_data_word             : in std_logic_vector(7 downto 0) := (others => '1'); --transmission word (Tx) (continuous 1 for 'off')
         tx_start                 : in std_logic                     := '0';
         rx_data                  : in std_logic                     := '1';                                  --receiving bit (Rx) (continuous 1 for 'off')
         rx_finished_out          : out std_logic                    := '0';                                  -- port for signaling having finished receiving a data word
@@ -210,12 +210,7 @@ begin
     -- TX data flow
     tx_data_process : process (tx_uart_clk, rst) begin
         if (rising_edge(tx_uart_clk)) then
-            if (rst = '1') then          --synchronous reset (HIGH ACTIVE)
-                tx_reg   <= (others => '1'); --register all 1s (therefore no message)
-                tx_ready <= '1';             --ready to receive
-                else
-                tx_data_out <= tx_reg(bits_per_package - tx_bit_counter);
-            end if;
+            tx_data_out <= tx_reg(bits_per_package - tx_bit_counter);
         end if;
     end process;
 
