@@ -2,12 +2,12 @@
 
 ## Todo
 
--   [x] Debug RX functionality
--   [x] Debug TX
--   [x] Debug TX parity bits
+-   [x] Debug RX functionality (incl. looking at the correct bit order: start -> lsb -> ... -> msb -> parity -> end)
+-   [x] Debug TX functionality (incl. looking at the correct bit order: start -> lsb -> ... -> msb -> parity -> end)
+-   [x] Debug TX parity bits (off, even, odd)
 -   [x] Debug half duplex
 -   [x] Debug full duplex
--   [ ] Debug theory of high baud-rates
+-   [ ] Look at theory of high baud-rates and simulate them.
 -   [ ] Incorporate and debug parity bit calculation for the RX (make available via a new output port)
 -   [ ] Why is the time to transmit 1 data package steadily decreasing?
 -   [ ] Finish documentation
@@ -20,6 +20,11 @@ The Baud-rate is set via supplying the quotient of the frequency of `clk` and th
 Example: for a 10MHz clock with 115200 Bd: `cfg_clkSpeed_over_bdRate`$=\frac{10000000}{115200}=86.80\overline{5}\approx 87$[^1].
 As should be obvious, there are limits on how far the speed of the UART interface can be pushed this way, but the user is assumed to be smart and therefore given all responsibility (we, after all, are not Quartus😉).
 [^1]: If you incorporate this calculation into your VHDL code (like we did in the test-bench) your signal will actually have the 86 as its value.
+
+#### High baud rates
+
+With a 10MHz clock the GHDL simulation of the rtl can do 2500000 without any problems arising.
+Keep in mind, that this is just a simulation and the real world may behave drastically differently, especially for higher and higher Baud-rates (at some points the physics might also become a problem).
 
 ### TX
 
