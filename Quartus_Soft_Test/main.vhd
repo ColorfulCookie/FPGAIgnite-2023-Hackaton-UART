@@ -29,6 +29,17 @@ architecture rtl of main is
       -- bits_per_word: integer := 8;--nr of data bits in each transmission; hardcoded to 8 
     );
   end component uartus;
+
+  component test_ram is
+    port
+    (
+      address : in std_logic_vector (7 downto 0);
+      clock   : in std_logic := '1';
+      data    : in std_logic_vector (7 downto 0);
+      wren    : in std_logic;
+      q       : out std_logic_vector (7 downto 0)
+    );
+  end component test_ram;
 begin
   uut : uartus
   port map
