@@ -40,6 +40,9 @@ architecture rtl of main is
       q       : out std_logic_vector (7 downto 0)
     );
   end component test_ram;
+
+  signal s_ram_out          : std_logic_vector(7 downto 0);
+  signal s_rx_data_word_out : std_logic_vector(7 downto 0);
 begin
   uut : uartus
   port map
@@ -48,13 +51,24 @@ begin
     rst                      => '0',
     tx_data_out              => O_tx,
     tx_ready                 => open,
-    tx_data_word_in => (others => '1'),
+    tx_data_word_in          => s_ram_out,
     tx_start                 => '0',
     rx_data_in               => I_rx,
     rx_finished_out          => open,
-    rx_data_word_out         => open,
+    rx_data_word_out         => s_rx_data_word_out,
     cfg_parity_setting       => "00",
     cfg_clkSpeed_over_bdRate => std_logic_vector(to_unsigned(87, 32))
+  );
+
+  ram : test_ram
+  port
+  map
+  (
+  address => "00000000",
+  clock   => I_clk,
+  data    => s_rx_data_word_out,
+  wren    => '1',
+  q       => s_ram_out
   );
 
 end architecture;
