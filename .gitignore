@@ -3,5 +3,6 @@
 **.cf
 **.o
 */db/*
+*/simulation/*
 */incremental_db/*
 */output_files/*
