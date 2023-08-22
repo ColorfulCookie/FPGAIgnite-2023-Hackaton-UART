@@ -41,13 +41,19 @@ architecture rtl of main is
     );
   end component test_ram;
 
-  -- generate state machine
-  type state_type is (idle, pre_transmit, transmit, post_transmit, pre_receive, receive, post_receive);
-  signal s_global_state     : state_type                   := idle;
-  signal s_rw_address       : std_logic_vector(7 downto 0) := (others => '0');
-  signal s_wren             : std_logic                    := '0';
+  type state_type is (IDLE, PRE_TRANSMIT, TRANSMIT, POST_TRANSMIT, PRE_RECEIVE, RECEIVE, POST_RECEIVE);
+  signal s_global_state     : state_type             := idle;
+  signal s_rw_address       : integer range 0 to 255 := 0;
+  signal s_wren             : std_logic              := '0';
   signal s_ram_out          : std_logic_vector(7 downto 0);
   signal s_rx_data_word_out : std_logic_vector(7 downto 0);
+
+  type s_button_edge_state_type is (HIGH, LOW, FALLING, RISING);
+  signal s_button_edge_state : s_button_edge_state_type := HIGH;
+  signal s_button_edge_pulse : std_logic                := '0';
+
+  signal s_tx_start : std_logic := '0';
+
 begin
   uut : uartus
   port map
@@ -57,7 +63,7 @@ begin
     tx_data_out              => O_tx,
     tx_ready                 => open,
     tx_data_word_in          => s_ram_out,
-    tx_start                 => '0',
+    tx_start                 => s_tx_start,
     rx_data_in               => I_rx,
     rx_finished_out          => open,
     rx_data_word_out         => s_rx_data_word_out,
@@ -65,15 +71,122 @@ begin
     cfg_clkSpeed_over_bdRate => std_logic_vector(to_unsigned(87, 32))
   );
 
-  ram : test_ram
+  test_ram_instance : test_ram
   port
   map
   (
-  address => s_rw_address,
+  address => std_logic_vector(to_unsigned(s_rw_address, 8)),
   clock   => I_clk,
   data    => s_rx_data_word_out,
   wren    => s_wren,
   q       => s_ram_out
   );
+
+  s_global_state_process : process (I_clk)
+  begin
+    if rising_edge(I_clk) then
+      case s_global_state is
+        when IDLE =>
+          if s_button_edge_pulse = '1' then
+            s_global_state <= PRE_TRANSMIT;
+          end if;
+        when PRE_TRANSMIT =>
+          s_global_state <= TRANSMIT;
+        when TRANSMIT =>
+          s_global_state <= POST_TRANSMIT;
+        when POST_TRANSMIT =>
+          s_global_state <= PRE_RECEIVE;
+        when PRE_RECEIVE =>
+          s_global_state <= RECEIVE;
+        when RECEIVE =>
+          s_global_state <= POST_RECEIVE;
+        when POST_RECEIVE =>
+          s_global_state <= IDLE;
+        when others =>
+          s_global_state <= IDLE;
+      end case;
+    end if;
+  end process s_global_state_process;
+
+  s_wren_process : process (all)
+  begin
+    case s_global_state is
+      when IDLE =>
+        s_wren <= '1';
+      when PRE_TRANSMIT =>
+        s_wren <= '0';
+      when TRANSMIT =>
+        s_wren <= '0';
+      when POST_TRANSMIT =>
+        s_wren <= '0';
+      when PRE_RECEIVE =>
+        s_wren <= '1';
+      when RECEIVE =>
+        s_wren <= '1';
+      when POST_RECEIVE =>
+        s_wren <= '1';
+      when others =>
+        s_wren <= '0';
+    end case;
+  end process s_wren_process;
+  s_button_edge_state_process : process (I_clk)
+  begin
+    if rising_edge(I_clk) then
+      case s_button_edge_state is
+        when LOW =>
+          if I_button_press = '1' then
+            s_button_edge_state <= RISING;
+          end if;
+        when HIGH =>
+          if I_button_press = '0' then
+            s_button_edge_state <= FALLING;
+          end if;
+        when FALLING =>
+          s_button_edge_state <= LOW;
+        when RISING =>
+          s_button_edge_state <= HIGH;
+        when others =>
+          s_button_edge_state <= LOW;
+      end case;
+    end if;
+  end process;
+
+  s_button_edge_pulse_process : process (I_clk)
+  begin
+    case s_button_edge_state is
+      when LOW =>
+        s_button_edge_pulse <= '0';
+      when HIGH =>
+        s_button_edge_pulse <= '0';
+      when RISING =>
+        s_button_edge_pulse <= '1';
+      when FALLING =>
+        s_button_edge_pulse <= '0';
+      when others =>
+        s_button_edge_pulse <= '0';
+    end case;
+  end process;
+
+  s_tx_start_process : process (all)
+  begin
+    if s_button_edge_pulse = '1' then
+      s_tx_start <= '1';
+    else
+      s_tx_start <= '0';
+    end if;
+  end process;
+
+  s_rw_address_process : process (I_clk)
+  begin
+    if rising_edge(I_clk) then
+      if s_global_state = POST_RECEIVE then
+        s_rw_address <= s_rw_address + 1;
+      elsif s_ram_out = x"0d" then
+        s_rw_address <= 0;
+      else
+        s_rw_address <= s_rw_address;
+      end if;
+    end if;
+  end process;
 
 end architecture;
