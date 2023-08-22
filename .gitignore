@@ -8,3 +8,5 @@
 **/output_files/
 **.rpt
 **/rtl_work/
+**.wlf
+modelsim.ini
