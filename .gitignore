@@ -2,7 +2,8 @@
 **.log
 **.cf
 **.o
-*/db/*
-*/simulation/*
-*/incremental_db/*
-*/output_files/*
+**/db/**
+**/simulation/**
+**/incremental_db/**
+**/output_files/**
+**.rpt
