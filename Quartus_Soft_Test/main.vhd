@@ -41,6 +41,11 @@ architecture rtl of main is
     );
   end component test_ram;
 
+  -- generate state machine
+  type state_type is (idle, pre_transmit, transmit, post_transmit, pre_receive, receive, post_receive);
+  signal s_global_state     : state_type                   := idle;
+  signal s_rw_address       : std_logic_vector(7 downto 0) := (others => '0');
+  signal s_wren             : std_logic                    := '0';
   signal s_ram_out          : std_logic_vector(7 downto 0);
   signal s_rx_data_word_out : std_logic_vector(7 downto 0);
 begin
@@ -64,10 +69,10 @@ begin
   port
   map
   (
-  address => "00000000",
+  address => s_rw_address,
   clock   => I_clk,
   data    => s_rx_data_word_out,
-  wren    => '1',
+  wren    => s_wren,
   q       => s_ram_out
   );
 
