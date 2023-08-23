@@ -16,7 +16,7 @@ vsim -t 1ps -L altera -L lpm -L sgate -L altera_mf -L altera_lnsim -L cyclone10l
 
 # add wave sim:/main_tb/uut/UART/uart_memory_addr_counter_inst/*
 # add wave sim:/main_tb/uut/neural_network_inst/nn_network_controller_inst/*
-add wave sim:/main_tb/uut/*
+add wave sim:/main_tb/uut/uut/*
 view structure
 view signals
-run 40 ms
+run 1 ms
