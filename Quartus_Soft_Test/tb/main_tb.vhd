@@ -63,14 +63,16 @@ BEGIN
     );
 
     PROCESS BEGIN
-        WAIT FOR 100 ns;
-        s_button_press <= '0';
-        WAIT FOR 100 ns;
-        s_button_press <= '1';
-        WAIT FOR 100 ns;
+        WAIT FOR 20 us;
         send_uart_data(x"AA", s_rx);
-        WAIT FOR c_bit_period * 2;
-        send_uart_data(x"BB", s_rx);
+        WAIT FOR c_bit_period * 50;
+        send_uart_data(x"0d", s_rx);
+        -- WAIT FOR c_bit_period * 2;
+        -- send_uart_data(x"0d", s_rx);
+        WAIT FOR 20 us;
+        s_button_press <= '0';
+        WAIT FOR 200 us;
+        s_button_press <= '1';
         WAIT;
 
     END PROCESS;
