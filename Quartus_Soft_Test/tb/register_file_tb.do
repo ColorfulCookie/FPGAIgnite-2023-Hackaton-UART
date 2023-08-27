@@ -11,7 +11,7 @@ vsim -t 1ps -L altera -L lpm -L sgate -L altera_mf -L altera_lnsim -L cyclone10l
 # add wave *
 #add wave sim:/main_tb/uut/global_control_inst/*
 
-add wave sim:/register_file_tb/*
+add wave sim:/register_file_tb/uut/*
 view structure
 view signals
 run 1 ms

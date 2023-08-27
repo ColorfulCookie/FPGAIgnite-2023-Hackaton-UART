@@ -21,24 +21,36 @@ ARCHITECTURE rtl OF register_file IS
     SIGNAL s_state            : t_state                                 := s_write;
     SIGNAL r_register         : t_register_array                        := (OTHERS => (OTHERS => '0'));
     SIGNAL s_register_counter : INTEGER RANGE 0 TO g_register_count - 1 := 0;
+    SIGNAL s_counter_reset    : STD_LOGIC                               := '0';
 
 BEGIN
     s_register_counter_process : PROCESS (i_clk)
     BEGIN
         IF rising_edge(i_clk) THEN
-            IF i_reset = '1' THEN
+            IF s_counter_reset = '1' THEN
                 s_register_counter <= 0;
-                ELSIF i_increment_pulse = '1' THEN
+            ELSIF i_increment_pulse = '1' THEN
                 IF s_register_counter = g_register_count - 1 THEN
                     s_register_counter <= 0;
-                    ELSE
+                ELSE
                     s_register_counter <= s_register_counter + 1;
                 END IF;
-                ELSE
+            ELSE
                 s_register_counter <= s_register_counter;
             END IF;
         END IF;
     END PROCESS s_register_counter_process;
+
+    s_counter_reset_process : PROCESS (i_clk)
+    BEGIN
+        IF rising_edge(i_clk) THEN
+            IF o_word_out = x"0d" THEN
+                s_counter_reset <= '1';
+            ELSE
+                s_counter_reset <= '0';
+            END IF;
+        END IF;
+    END PROCESS s_counter_reset_process;
 
     o_word_out_process : PROCESS (ALL)
     BEGIN

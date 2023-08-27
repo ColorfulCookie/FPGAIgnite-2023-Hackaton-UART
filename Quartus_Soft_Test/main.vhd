@@ -2,6 +2,9 @@ LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 ENTITY main IS
+    GENERIC (
+        g_cfg_clkSpeed_over_bdRate : STD_LOGIC_VECTOR(31 DOWNTO 0) := STD_LOGIC_VECTOR(to_unsigned(87, 32)) -- sets the effective baudrate; clk/bd, e.g. for a 10MHz clk and with 115.2k Bd: 10 000 000 / 115 200 = 86.8
+    );
     PORT (
         I_clk          : IN  STD_LOGIC;
         I_rx           : IN  STD_LOGIC;
@@ -11,6 +14,9 @@ ENTITY main IS
 END ENTITY main;
 
 ARCHITECTURE rtl OF main IS
+    -------------
+    -- Components
+    -------------
     COMPONENT uartus IS
         PORT (
             I_clk                      : IN  STD_LOGIC                     := '1'; --clock
@@ -28,15 +34,6 @@ ARCHITECTURE rtl OF main IS
         );
     END COMPONENT uartus;
 
-    COMPONENT test_ram IS
-        PORT (
-            address : IN  STD_LOGIC_VECTOR (7 DOWNTO 0);
-            clock   : IN  STD_LOGIC := '1';
-            data    : IN  STD_LOGIC_VECTOR (7 DOWNTO 0);
-            wren    : IN  STD_LOGIC;
-            q       : OUT STD_LOGIC_VECTOR (7 DOWNTO 0)
-        );
-    END COMPONENT test_ram;
     COMPONENT edge_detector IS
         GENERIC (
             g_rising  : STD_LOGIC := '1';
@@ -49,26 +46,87 @@ ARCHITECTURE rtl OF main IS
         );
     END COMPONENT edge_detector;
 
-    SIGNAL s_rx_data_word_out : STD_LOGIC_VECTOR(7 DOWNTO 0);
+    COMPONENT register_file IS
+        GENERIC (
+            g_register_count : INTEGER := 32
+        );
+        PORT (
+            i_clk             : IN  STD_LOGIC;
+            i_reset           : IN  STD_LOGIC;
+            i_increment_pulse : IN  STD_LOGIC;
+            i_write_enable    : IN  STD_LOGIC;
+            i_word_in         : IN  STD_LOGIC_VECTOR(7 DOWNTO 0);
+            o_word_out        : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
+        );
+    END COMPONENT register_file;
 
-    SIGNAL s_tx_ready        : STD_LOGIC := '0';
-    SIGNAL s_rx_finished_out : STD_LOGIC := '1';
+    ----------
+    -- Signals
+    ----------
+    SIGNAL s_clk                      : STD_LOGIC;
+    SIGNAL s_rst                      : STD_LOGIC;
+    SIGNAL s_tx_data                  : STD_LOGIC;
+    SIGNAL s_tx_ready                 : STD_LOGIC;
+    SIGNAL s_tx_data_word             : STD_LOGIC_VECTOR(7 DOWNTO 0);
+    SIGNAL s_tx_start                 : STD_LOGIC;
+    SIGNAL s_rx_finished              : STD_LOGIC;
+    SIGNAL s_rx_finished_pulse        : STD_LOGIC;
+    SIGNAL s_rx_data_word             : STD_LOGIC_VECTOR(7 DOWNTO 0);
+    SIGNAL s_cfg_parity_setting       : STD_LOGIC_VECTOR(1 DOWNTO 0) := "00";
+    SIGNAL s_cfg_clkSpeed_over_bdRate : STD_LOGIC_VECTOR(31 DOWNTO 0);
+
+    SIGNAL s_button_press_pulse : STD_LOGIC := '0';
+    SIGNAL s_reg_out            : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
 BEGIN
-    uut : uartus
-    PORT MAP
-    (
+    s_cfg_clkSpeed_over_bdRate <= g_cfg_clkSpeed_over_bdRate;
+    uart_module : uartus
+    PORT MAP(
         I_clk                      => I_clk,
         I_rst                      => '0',
-        O_tx_data                  => O_tx,
+        O_tx_data                  => s_tx_data,
         O_tx_ready                 => s_tx_ready,
-        I_tx_data_word             => OPEN,
-        I_tx_start                 => OPEN,
+        I_tx_data_word             => s_tx_data_word,
+        I_tx_start                 => s_tx_start,
         I_rx_data                  => I_rx,
-        O_rx_finished              => s_rx_finished_out,
-        O_rx_data_word             => s_rx_data_word_out,
-        I_cfg_parity_setting       => "00",
-        I_cfg_clkSpeed_over_bdRate => STD_LOGIC_VECTOR(to_unsigned(87, 32))
+        O_rx_finished              => s_rx_finished,
+        O_rx_data_word             => s_rx_data_word,
+        I_cfg_parity_setting       => s_cfg_parity_setting,
+        I_cfg_clkSpeed_over_bdRate => g_cfg_clkSpeed_over_bdRate
+    );
+
+    button_edge_detector : edge_detector
+    GENERIC MAP(
+        g_rising  => '1',
+        g_falling => '0'
+    )
+    PORT MAP(
+        clk          => I_clk,
+        I_signal     => I_button_press,
+        O_edge_pulse => s_button_press_pulse
+    );
+    rx_finished_detector : edge_detector
+    GENERIC MAP(
+        g_rising  => '1',
+        g_falling => '0'
+    )
+    PORT MAP(
+        clk          => I_clk,
+        I_signal     => s_rx_finished,
+        O_edge_pulse => s_rx_finished_pulse
+    );
+
+    register_file_module : register_file
+    GENERIC MAP(
+        g_register_count => 32
+    )
+    PORT MAP(
+        i_clk             => I_clk,
+        i_reset           => '0',
+        i_increment_pulse => s_rx_finished_pulse,
+        i_write_enable    => s_rx_finished_pulse,
+        i_word_in         => s_rx_data_word,
+        o_word_out        => s_reg_out
     );
 
 END ARCHITECTURE;
