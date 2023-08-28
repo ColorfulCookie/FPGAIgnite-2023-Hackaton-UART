@@ -42,6 +42,9 @@ ARCHITECTURE rtl OF main_tb IS
     SIGNAL s_internal_register_counter   : INTEGER RANGE 0 TO 32 - 1    := 0;
     SIGNAL s_internal_reg_out            : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
     SIGNAL s_internal_counter_reset      : STD_LOGIC                    := '0';
+    SIGNAL s_internal_tx_ready           : STD_LOGIC                    := '0';
+    SIGNAL s_internal_tx_data            : STD_LOGIC                    := '0';
+    SIGNAL s_internal_tx_ready_pulse     : STD_LOGIC                    := '0';
     ---------------
     -- procedures
     ---------------
@@ -63,8 +66,10 @@ BEGIN
     s_internal_register_counter   <= << SIGNAL .main_tb.uut.register_file_module.s_register_counter : INTEGER RANGE 0 TO 32 - 1 >> ;
     s_internal_reg_out            <= << SIGNAL .main_tb.uut.s_reg_out                                        : STD_LOGIC_VECTOR(7 DOWNTO 0) >> ;
     s_internal_counter_reset      <= << SIGNAL .main_tb.uut.register_file_module.s_counter_reset       : STD_LOGIC >> ;
-
-    uut : main
+    s_internal_tx_ready           <= << SIGNAL .main_tb.uut.s_tx_ready                                      : STD_LOGIC >> ;
+    s_internal_tx_data            <= << SIGNAL .main_tb.uut.s_tx_data                                        : STD_LOGIC >> ;
+    s_internal_tx_ready_pulse     <= << SIGNAL .main_tb.uut.s_tx_ready_pulse                          : STD_LOGIC >> ;
+    uut                                                                                           : main
     GENERIC MAP(
         g_cfg_clkSpeed_over_bdRate => STD_LOGIC_VECTOR(to_unsigned(c_clk_speed / c_baud_rate, 32))
     )
@@ -103,8 +108,8 @@ BEGIN
         check_rx_register(X"41");
 
         WAIT_until_time(250 us);
-        rx_byte(X"42"); -- B
-        check_rx_register(X"42");
+        rx_byte(X"11"); -- B
+        check_rx_register(X"11");
 
         WAIT_until_time(400 us);
         rx_byte(X"0d"); -- B
@@ -118,8 +123,8 @@ BEGIN
         s_test_state <= TEST_B;
         rx_byte(X"41"); -- A
         check_rx_register(X"41");
-        rx_byte(X"42"); -- B
-        check_rx_register(X"42");
+        rx_byte(X"11"); -- B
+        check_rx_register(X"11");
         rx_byte(X"0d"); -- B
         check_rx_register(X"0d");
         REPORT "Test B passed";

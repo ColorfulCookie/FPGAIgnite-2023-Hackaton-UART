@@ -63,12 +63,22 @@ ARCHITECTURE rtl OF main IS
     ----------
     -- Signals
     ----------
+
+    TYPE t_tx_state IS (
+        tx_idle,
+        tx_start,
+        tx_post
+    );
+    SIGNAL s_tx_state : t_tx_state := tx_idle;
+
     SIGNAL s_clk                      : STD_LOGIC;
     SIGNAL s_rst                      : STD_LOGIC;
     SIGNAL s_tx_data                  : STD_LOGIC;
     SIGNAL s_tx_ready                 : STD_LOGIC;
+    SIGNAL s_tx_ready_pulse           : STD_LOGIC;
     SIGNAL s_tx_data_word             : STD_LOGIC_VECTOR(7 DOWNTO 0);
     SIGNAL s_tx_start                 : STD_LOGIC;
+    SIGNAL s_tx_start_pulse           : STD_LOGIC;
     SIGNAL s_rx_finished              : STD_LOGIC;
     SIGNAL s_rx_finished_pulse        : STD_LOGIC;
     SIGNAL s_rx_data_word             : STD_LOGIC_VECTOR(7 DOWNTO 0);
@@ -86,8 +96,8 @@ BEGIN
         I_rst                      => '0',
         O_tx_data                  => s_tx_data,
         O_tx_ready                 => s_tx_ready,
-        I_tx_data_word             => s_tx_data_word,
-        I_tx_start                 => s_tx_start,
+        I_tx_data_word             => s_reg_out,
+        I_tx_start                 => s_tx_start_pulse,
         I_rx_data                  => I_rx,
         O_rx_finished              => s_rx_finished,
         O_rx_data_word             => s_rx_data_word,
@@ -115,6 +125,16 @@ BEGIN
         I_signal     => s_rx_finished,
         O_edge_pulse => s_rx_finished_pulse
     );
+    tx_ready_edge_detector : edge_detector
+    GENERIC MAP(
+        g_rising  => '1',
+        g_falling => '0'
+    )
+    PORT MAP(
+        clk          => I_clk,
+        I_signal     => s_tx_ready,
+        O_edge_pulse => s_tx_ready_pulse
+    );
 
     register_file_module : register_file
     GENERIC MAP(
@@ -123,10 +143,47 @@ BEGIN
     PORT MAP(
         i_clk             => I_clk,
         i_reset           => '0',
-        i_increment_pulse => s_rx_finished_pulse,
+        i_increment_pulse => s_rx_finished_pulse OR s_tx_ready_pulse,
         i_write_enable    => s_rx_finished_pulse,
         i_word_in         => s_rx_data_word,
         o_word_out        => s_reg_out
     );
+
+    tx_state_machine : PROCESS (I_clk)
+    BEGIN
+        IF rising_edge(I_clk) THEN
+            CASE s_tx_state IS
+                WHEN tx_idle =>
+                    IF s_button_press_pulse = '1' THEN
+                        s_tx_state <= tx_start;
+                    END IF;
+                WHEN tx_start =>
+                    IF s_tx_ready_pulse = '1' THEN
+                        s_tx_state <= tx_post;
+                    ELSE
+                        s_tx_state <= tx_start;
+                    END IF;
+                WHEN tx_post =>
+                    IF s_reg_out = x"0d" THEN
+                        s_tx_state <= tx_idle;
+                    ELSE
+                        s_tx_state <= tx_start;
+                    END IF;
+                WHEN OTHERS =>
+                    s_tx_state <= tx_idle;
+            END CASE;
+        END IF;
+    END PROCESS tx_state_machine;
+
+    s_tx_start_process : PROCESS (I_clk)
+    BEGIN
+        IF rising_edge(I_clk) THEN
+            IF s_tx_state = tx_start THEN
+                s_tx_start_pulse <= '1';
+            ELSE
+                s_tx_start_pulse <= '0';
+            END IF;
+        END IF;
+    END PROCESS s_tx_start_process;
 
 END ARCHITECTURE;
